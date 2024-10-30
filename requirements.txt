@@ -1,0 +1,12 @@
+# prod
+aiohttp==3.10.10
+pyjwt==2.9.0
+
+# test
+aioresponses==0.7.6
+
+# dev
+build==1.2.2
+coverage==7.6.3
+pip==24.2
+ruff==0.7.0
