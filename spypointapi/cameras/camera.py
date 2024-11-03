@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import TypeAlias
 
 Percentage: TypeAlias = float
@@ -20,15 +20,14 @@ class Camera:
     memory: Percentage | None = None
 
     @property
-    def status(self) -> str:
-        if datetime.now() - self.last_update_time <= timedelta(hours=24):
-            return 'Online'
-        else:
-            return 'Offline'
+    def is_online(self) -> bool:
+        now = datetime.now().replace(tzinfo=UTC)
+        diff = now - self.last_update_time
+        return diff <= timedelta(hours=24)
 
     def __str__(self) -> str:
         return (f"Camera(id={self.id}, name={self.name}, model={self.model}, "
                 f"modem_firmware={self.modem_firmware}, camera_firmware={self.camera_firmware}, "
                 f"last_update_time={self.last_update_time}, signal={self.signal}, "
                 f"temperature={self.temperature}, battery={self.battery}, memory={self.memory}, "
-                f"status={self.status})")
+                f"online={self.is_online})")

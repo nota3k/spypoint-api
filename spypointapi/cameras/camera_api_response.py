@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Dict, Any, List
 
 from spypointapi import Camera
@@ -20,7 +20,7 @@ class CameraApiResponse:
             model=status['model'],
             modem_firmware=status['modemFirmware'],
             camera_firmware=status['version'],
-            last_update_time=datetime.fromisoformat(status['lastUpdate'][:-1]),
+            last_update_time=datetime.fromisoformat(status['lastUpdate'][:-1]).replace(tzinfo=UTC),
             signal=status.get('signal', {}).get('processed', {}).get('percentage', None),
             temperature=CameraApiResponse.temperature_from_json(status.get('temperature', None)),
             battery=CameraApiResponse.battery_from_json(status.get('batteries', None)),

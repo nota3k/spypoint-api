@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from http import HTTPStatus
 
 import aiohttp
@@ -99,7 +99,7 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
                         model="model",
                         modem_firmware="modemFirmware",
                         camera_firmware="version",
-                        last_update_time=datetime(2024, 10, 30, 2, 3, 48, 716000),
+                        last_update_time=datetime(2024, 10, 30, 2, 3, 48, 716000, timezone.utc),
                     ),
                     Camera(
                         id="2",
@@ -107,7 +107,7 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
                         model="model",
                         modem_firmware="modemFirmware",
                         camera_firmware="version",
-                        last_update_time=datetime(2024, 10, 30, 2, 3, 48, 716000),
+                        last_update_time=datetime(2024, 10, 30, 2, 3, 48, 716000, timezone.utc),
                     )
                 ]
                 self.assertEqual(cameras, expected_cameras)
