@@ -31,7 +31,10 @@ class TestCameraApiResponse(unittest.TestCase):
                     "memory": {
                         "used": 100,
                         "size": 1000,
-                    }
+                    },
+                    "notifications": [
+                        "missing_sd_card"
+                    ]
                 },
             })
 
@@ -45,6 +48,7 @@ class TestCameraApiResponse(unittest.TestCase):
         self.assertEqual(camera.temperature, 20)
         self.assertEqual(camera.battery, 90)
         self.assertEqual(camera.memory, 10)
+        self.assertEqual(camera.notifications, ["missing_sd_card"])
 
     def test_parses_missing_fields(self):
         camera = CameraApiResponse.camera_from_json(

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta, UTC
-from typing import TypeAlias
+from typing import TypeAlias, List
 
 Percentage: TypeAlias = float
 Celsius: TypeAlias = int
@@ -18,6 +18,7 @@ class Camera:
     temperature: Celsius | None = None
     battery: Percentage | None = None
     memory: Percentage | None = None
+    notifications: List[str] | None = None
 
     @property
     def is_online(self) -> bool:
@@ -30,4 +31,5 @@ class Camera:
                 f"modem_firmware={self.modem_firmware}, camera_firmware={self.camera_firmware}, "
                 f"last_update_time={self.last_update_time}, signal={self.signal}, "
                 f"temperature={self.temperature}, battery={self.battery}, memory={self.memory}, "
+                f"notifications={self.notifications}, "
                 f"online={self.is_online})")
