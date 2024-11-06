@@ -24,6 +24,7 @@ class CameraApiResponse:
             signal=status.get('signal', {}).get('processed', {}).get('percentage', None),
             temperature=CameraApiResponse.temperature_from_json(status.get('temperature', None)),
             battery=CameraApiResponse.battery_from_json(status.get('batteries', None)),
+            battery_type=status.get('batteryType', None),
             memory=CameraApiResponse.memory_from_json(status.get('memory', None)),
             notifications=status.get('notifications', None),
         )

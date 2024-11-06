@@ -17,6 +17,7 @@ class Camera:
     signal: Percentage | None = None
     temperature: Celsius | None = None
     battery: Percentage | None = None
+    battery_type: str | None = None
     memory: Percentage | None = None
     notifications: List[str] | None = None
 
@@ -30,6 +31,6 @@ class Camera:
         return (f"Camera(id={self.id}, name={self.name}, model={self.model}, "
                 f"modem_firmware={self.modem_firmware}, camera_firmware={self.camera_firmware}, "
                 f"last_update_time={self.last_update_time}, signal={self.signal}, "
-                f"temperature={self.temperature}, battery={self.battery}, memory={self.memory}, "
-                f"notifications={self.notifications}, "
+                f"temperature={self.temperature}, battery={self.battery}, battery_type={self.battery_type}, "
+                f"memory={self.memory}, notifications={self.notifications}, "
                 f"online={self.is_online})")

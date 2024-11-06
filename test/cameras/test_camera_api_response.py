@@ -28,6 +28,7 @@ class TestCameraApiResponse(unittest.TestCase):
                         "value": 20,
                     },
                     "batteries": [0, 90, 0],
+                    "batteryType": "12V",
                     "memory": {
                         "used": 100,
                         "size": 1000,
@@ -47,6 +48,7 @@ class TestCameraApiResponse(unittest.TestCase):
         self.assertEqual(camera.signal, 77)
         self.assertEqual(camera.temperature, 20)
         self.assertEqual(camera.battery, 90)
+        self.assertEqual(camera.battery_type, "12V")
         self.assertEqual(camera.memory, 10)
         self.assertEqual(camera.notifications, ["missing_sd_card"])
 
