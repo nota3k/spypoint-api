@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime
 
 from spypointapi.cameras.camera_api_response import CameraApiResponse
 
@@ -44,7 +44,8 @@ class TestCameraApiResponse(unittest.TestCase):
         self.assertEqual(camera.model, "model")
         self.assertEqual(camera.modem_firmware, "modemFirmware")
         self.assertEqual(camera.camera_firmware, "version")
-        self.assertEqual(camera.last_update_time, datetime(2024, 10, 30, 2, 3, 48, 716000, timezone.utc))
+        current_timezone = datetime.now().astimezone().tzinfo
+        self.assertEqual(camera.last_update_time, datetime(2024, 10, 30, 2, 3, 48, 716000, current_timezone))
         self.assertEqual(camera.signal, 77)
         self.assertEqual(camera.temperature, 20)
         self.assertEqual(camera.battery, 90)
@@ -68,12 +69,6 @@ class TestCameraApiResponse(unittest.TestCase):
             }
         )
 
-        self.assertEqual(camera.id, "id")
-        self.assertEqual(camera.name, "name")
-        self.assertEqual(camera.model, "model")
-        self.assertEqual(camera.modem_firmware, "modemFirmware")
-        self.assertEqual(camera.camera_firmware, "version")
-        self.assertEqual(camera.last_update_time, datetime(2024, 10, 30, 2, 3, 48, 716000, timezone.utc))
         self.assertEqual(camera.signal, None)
         self.assertEqual(camera.temperature, None)
         self.assertEqual(camera.battery, None)

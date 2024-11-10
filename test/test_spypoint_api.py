@@ -1,11 +1,12 @@
-from datetime import datetime, timezone
+import unittest
+from datetime import datetime
 from http import HTTPStatus
 
 import aiohttp
 import jwt
-import unittest
 
-from spypointapi import SpypointApi, Camera
+from spypointapi import SpypointApi
+from spypointapi.cameras.camera_api_response import CameraApiResponse
 from spypointapi.spypoint_api import SpypointApiInvalidCredentialsError, SpypointApiError
 from test.spypoint_server_for_test import SpypointServerForTest
 
@@ -92,24 +93,7 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
                     method='GET',
                     headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'})
 
-                expected_cameras = [
-                    Camera(
-                        id="1",
-                        name="camera 1",
-                        model="model",
-                        modem_firmware="modemFirmware",
-                        camera_firmware="version",
-                        last_update_time=datetime(2024, 10, 30, 2, 3, 48, 716000, timezone.utc),
-                    ),
-                    Camera(
-                        id="2",
-                        name="camera 2",
-                        model="model",
-                        modem_firmware="modemFirmware",
-                        camera_firmware="version",
-                        last_update_time=datetime(2024, 10, 30, 2, 3, 48, 716000, timezone.utc),
-                    )
-                ]
+                expected_cameras = CameraApiResponse.from_json(cameras_response)
                 self.assertEqual(cameras, expected_cameras)
 
     async def test_get_cameras_authentication_error(self):

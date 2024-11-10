@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta
 from typing import TypeAlias, List
 
 Percentage: TypeAlias = float
@@ -23,7 +23,7 @@ class Camera:
 
     @property
     def is_online(self) -> bool:
-        now = datetime.now().replace(tzinfo=UTC)
+        now = datetime.now().astimezone()
         diff = now - self.last_update_time
         return diff <= timedelta(hours=24)
 
