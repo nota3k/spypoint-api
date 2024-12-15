@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 from spypointapi import Camera
 
@@ -26,11 +26,11 @@ class CameraApiResponse:
             battery=CameraApiResponse.battery_from_json(status.get('batteries', None)),
             battery_type=status.get('batteryType', None),
             memory=CameraApiResponse.memory_from_json(status.get('memory', None)),
-            notifications=status.get('notifications', None),
+            notifications=CameraApiResponse.notifications_from_json(status.get('notifications', None)),
         )
 
     @classmethod
-    def temperature_from_json(cls, temperature: Dict[str, Any] | None) -> int | None:
+    def temperature_from_json(cls, temperature: Optional[Dict[str, Any]]) -> Optional[int]:
         if not temperature:
             return None
         if temperature['unit'] == 'C':
@@ -38,15 +38,21 @@ class CameraApiResponse:
         return int((temperature['value'] - 32) * 5 / 9)
 
     @classmethod
-    def battery_from_json(cls, batteries: Dict[str, Any] | None) -> str | None:
+    def battery_from_json(cls, batteries: Optional[Dict[str, Any]]) -> Optional[str]:
         if not batteries:
             return None
         return max(batteries)
 
     @classmethod
-    def memory_from_json(cls, memory: Dict[str, Any] | None) -> float | None:
+    def memory_from_json(cls, memory: Optional[Dict[str, Any]]) -> Optional[float]:
         if not memory:
             return None
         if memory.get('size', 0) == 0:
             return None
         return round(memory.get('used') / memory.get('size') * 100, 2)
+
+    @classmethod
+    def notifications_from_json(cls, notifications: Optional[Dict[str, Any]]) -> Optional[List[str]]:
+        if notifications is None:
+            return None
+        return [str(notification) for notification in notifications]

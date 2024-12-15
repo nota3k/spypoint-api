@@ -117,3 +117,26 @@ class TestCameraApiResponse(unittest.TestCase):
         )
 
         self.assertEqual(camera.temperature, -8)
+
+    def test_parses_notification_objects(self):
+        camera = CameraApiResponse.camera_from_json(
+            {
+                "id": "id",
+                "config": {
+                    "name": "name",
+                },
+                "status": {
+                    "model": "model",
+                    "modemFirmware": "modemFirmware",
+                    "version": "version",
+                    "lastUpdate": "2024-10-30T02:03:48.716Z",
+                    "notifications": [
+                        "low_battery",
+                        {"survivalModeStart": "2024-12-14T12:00:30.000-00:00"},
+                        {"survivalModeEnd": "2024-12-15T08:00:58.000-00:00"}
+                    ]
+                }
+            }
+        )
+
+        self.assertEqual(camera.notifications, ["low_battery", "{'survivalModeStart': '2024-12-14T12:00:30.000-00:00'}", "{'survivalModeEnd': '2024-12-15T08:00:58.000-00:00'}"])
