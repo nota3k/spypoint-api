@@ -62,8 +62,6 @@ class TestCameraApiResponse(unittest.TestCase):
                 },
                 "status": {
                     "model": "model",
-                    "modemFirmware": "modemFirmware",
-                    "version": "version",
                     "lastUpdate": "2024-10-30T02:03:48.716Z",
                 }
             }
@@ -73,6 +71,8 @@ class TestCameraApiResponse(unittest.TestCase):
         self.assertEqual(camera.temperature, None)
         self.assertEqual(camera.battery, None)
         self.assertEqual(camera.memory, None)
+        self.assertEqual(camera.modem_firmware, '')
+        self.assertEqual(camera.camera_firmware, '')
 
     def test_parses_missing_memory_size(self):
         camera = CameraApiResponse.camera_from_json(
