@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 from spypointapi import Camera
+from spypointapi.cameras.camera import Coordinates
 
 
 class CameraApiResponse:
@@ -27,7 +28,8 @@ class CameraApiResponse:
             battery_type=status.get('batteryType', None),
             memory=CameraApiResponse.memory_from_json(status.get('memory', None)),
             notifications=CameraApiResponse.notifications_from_json(status.get('notifications', None)),
-            owner=CameraApiResponse.owner_from_json(data)
+            owner=CameraApiResponse.owner_from_json(data),
+            coordinates=CameraApiResponse.coordinates_from_json(status.get('coordinates', None)),
         )
 
     @classmethod
@@ -64,3 +66,13 @@ class CameraApiResponse:
         if owner is None:
             return None
         return owner.strip()
+
+    @classmethod
+    def coordinates_from_json(cls, coordinates: Optional[List[Any]]) -> Optional[Coordinates]:
+        if (coordinates is None
+                or len(coordinates) < 1
+                or coordinates[0].get('position', {}).get('type', '') != 'Point'
+                or len(coordinates[0].get('position', {}).get('coordinates', [])) != 2):
+            return None
+        lat_lon = coordinates[0]['position']['coordinates']
+        return Coordinates(latitude=lat_lon[1], longitude=lat_lon[0])

@@ -4,6 +4,13 @@ from typing import TypeAlias, List
 
 Percentage: TypeAlias = float
 Celsius: TypeAlias = int
+Degrees: TypeAlias = float
+
+
+@dataclass()
+class Coordinates:
+    latitude: Degrees
+    longitude: Degrees
 
 
 @dataclass()
@@ -21,6 +28,7 @@ class Camera:
     memory: Percentage | None = None
     notifications: List[str] | None = None
     owner: str | None = None
+    coordinates: Coordinates | None = None
 
     @property
     def is_online(self) -> bool:
@@ -34,4 +42,4 @@ class Camera:
                 f"last_update_time={self.last_update_time}, signal={self.signal}, "
                 f"temperature={self.temperature}, battery={self.battery}, battery_type={self.battery_type}, "
                 f"memory={self.memory}, notifications={self.notifications}, "
-                f"online={self.is_online}), owner={self.owner}")
+                f"online={self.is_online}), owner={self.owner}, coordinates={self.coordinates})")

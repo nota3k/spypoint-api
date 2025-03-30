@@ -1,6 +1,7 @@
 import unittest
 from datetime import datetime
 
+from spypointapi.cameras.camera import Coordinates
 from spypointapi.cameras.camera_api_response import CameraApiResponse
 
 
@@ -158,3 +159,54 @@ class TestCameraApiResponse(unittest.TestCase):
         )
 
         self.assertEqual(camera.owner, "Philippe")
+
+    def test_parses_point_coordinates(self):
+        camera = CameraApiResponse.camera_from_json(
+            {
+                "id": "id",
+                "config": {
+                    "name": "name",
+                },
+                "status": {
+                    "model": "model",
+                    "lastUpdate": "2024-10-30T02:03:48.716Z",
+                    "coordinates": [{"position": {"type": "Point", "coordinates": [-70.1234, 45.123456]}}],
+                }
+            }
+        )
+
+        self.assertEqual(camera.coordinates, Coordinates(latitude=45.123456, longitude=-70.1234))
+
+    def test_ignores_empty_point_coordinates(self):
+        camera = CameraApiResponse.camera_from_json(
+            {
+                "id": "id",
+                "config": {
+                    "name": "name",
+                },
+                "status": {
+                    "model": "model",
+                    "lastUpdate": "2024-10-30T02:03:48.716Z",
+                    "coordinates": [{"position": {"type": "Point", "coordinates": []}}],
+                }
+            }
+        )
+
+        self.assertEqual(camera.coordinates, None)
+
+    def test_ignores_other_coordinates_type(self):
+        camera = CameraApiResponse.camera_from_json(
+            {
+                "id": "id",
+                "config": {
+                    "name": "name",
+                },
+                "status": {
+                    "model": "model",
+                    "lastUpdate": "2024-10-30T02:03:48.716Z",
+                    "coordinates": [{"position": {"type": "other"}}],
+                }
+            }
+        )
+
+        self.assertEqual(camera.coordinates, None)
