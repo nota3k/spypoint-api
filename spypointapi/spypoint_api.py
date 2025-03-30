@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timedelta
 from http import HTTPStatus
 from typing import List
@@ -6,6 +7,7 @@ from aiohttp import ClientSession, ClientResponse, ClientResponseError
 
 from spypointapi import Camera
 from spypointapi.cameras.camera_api_response import CameraApiResponse
+from spypointapi.shared_cameras.shared_cameras_api_response import SharedCamerasApiResponse
 
 
 class SpypointApiError(ClientResponseError):
@@ -47,11 +49,33 @@ class SpypointApi:
             raise SpypointApiError(response.request_info, response.history, status=response.status, message=response.reason, headers=response.headers)
 
     async def async_get_cameras(self) -> List[Camera]:
+        own_cameras = await self.async_get_own_cameras()
+        shared_cameras = await self.async_get_shared_cameras()
+        return own_cameras + shared_cameras
+
+    async def async_get_own_cameras(self) -> List[Camera]:
         await self.async_authenticate()
         async with self.session.get(f'{self.base_url}/camera/all', headers=self.headers) as response:
             self._raise_on_get_error(response)
             body = await response.json()
             return CameraApiResponse.from_json(body)
+
+    async def async_get_shared_cameras(self) -> List[Camera]:
+        await self.async_authenticate()
+        async with self.session.get(f'{self.base_url}/shared-cameras/all', headers=self.headers) as response:
+            self._raise_on_get_error(response)
+            body = await response.json()
+            camera_ids = SharedCamerasApiResponse.from_json(body)
+            gets_by_id = [self._async_get_shared_camera(camera_id) for camera_id in camera_ids]
+            return await asyncio.gather(*gets_by_id)
+
+    async def _async_get_shared_camera(self, camera_id) -> Camera:
+        await self.async_authenticate()
+        async with self.session.get(f'{self.base_url}/shared-cameras/{camera_id}', headers=self.headers) as response:
+            self._raise_on_get_error(response)
+            body = await response.json()
+            body['id'] = camera_id
+            return CameraApiResponse.camera_from_json(body)
 
     def _raise_on_get_error(self, response: ClientResponse):
         if response.status == HTTPStatus.UNAUTHORIZED:

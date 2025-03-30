@@ -20,6 +20,7 @@ class Camera:
     battery_type: str | None = None
     memory: Percentage | None = None
     notifications: List[str] | None = None
+    share: str | None = None
 
     @property
     def is_online(self) -> bool:
@@ -33,4 +34,4 @@ class Camera:
                 f"last_update_time={self.last_update_time}, signal={self.signal}, "
                 f"temperature={self.temperature}, battery={self.battery}, battery_type={self.battery_type}, "
                 f"memory={self.memory}, notifications={self.notifications}, "
-                f"online={self.is_online})")
+                f"online={self.is_online}), share={self.share}")

@@ -27,6 +27,7 @@ class CameraApiResponse:
             battery_type=status.get('batteryType', None),
             memory=CameraApiResponse.memory_from_json(status.get('memory', None)),
             notifications=CameraApiResponse.notifications_from_json(status.get('notifications', None)),
+            share=CameraApiResponse.share_from_json(data)
         )
 
     @classmethod
@@ -56,3 +57,10 @@ class CameraApiResponse:
         if notifications is None:
             return None
         return [str(notification) for notification in notifications]
+
+    @classmethod
+    def share_from_json(cls, data):
+        share = data.get('ownerFirstName', None)
+        if share is None:
+            return None
+        return f"shared_by_{share.lower().strip()}"

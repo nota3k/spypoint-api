@@ -52,7 +52,7 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
                 with self.assertRaises(SpypointApiError):
                     await api.async_authenticate()
 
-    async def test_get_cameras(self):
+    async def test_get_own_cameras(self):
         with SpypointServerForTest() as server:
             cameras_response = [
                 {
@@ -62,8 +62,6 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
                     },
                     "status": {
                         "model": "model",
-                        "modemFirmware": "modemFirmware",
-                        "version": "version",
                         "lastUpdate": "2024-10-30T02:03:48.716Z",
                     }
                 },
@@ -74,8 +72,6 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
                     },
                     "status": {
                         "model": "model",
-                        "modemFirmware": "modemFirmware",
-                        "version": "version",
                         "lastUpdate": "2024-10-30T02:03:48.716Z",
                     }
                 }
@@ -86,7 +82,7 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
 
             async with aiohttp.ClientSession() as session:
                 api = SpypointApi(self.username, self.password, session)
-                cameras = await api.async_get_cameras()
+                cameras = await api.async_get_own_cameras()
 
                 server.assert_called_with(
                     url='/camera/all',
@@ -95,6 +91,41 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
 
                 expected_cameras = CameraApiResponse.from_json(cameras_response)
                 self.assertEqual(cameras, expected_cameras)
+
+    async def test_get_shared_cameras(self):
+        with SpypointServerForTest() as server:
+            token = server.prepare_login_response()
+
+            camera_id = "id1"
+            shared_cameras_response = [{"sharedCameras": [{"cameraId": camera_id}]}]
+            server.prepare_shared_cameras_response(shared_cameras_response)
+
+            shared_camera_response = {
+                "config": {"name": "camera 1", },
+                "status": {"model": "model", "lastUpdate": "2024-10-30T02:03:48.716Z", }
+            }
+            server.prepare_shared_camera_response(camera_id, shared_camera_response)
+
+            async with aiohttp.ClientSession() as session:
+                api = SpypointApi(self.username, self.password, session)
+                cameras = await api.async_get_shared_cameras()
+
+                server.assert_called_with(
+                    url='/shared-cameras/all',
+                    method='GET',
+                    headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'})
+
+                server.assert_called_with(
+                    url=f'/shared-cameras/{camera_id}',
+                    method='GET',
+                    headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'})
+
+                expected_camera = CameraApiResponse.camera_from_json({
+                    "id": camera_id,
+                    "config": {"name": "camera 1", },
+                    "status": {"model": "model", "lastUpdate": "2024-10-30T02:03:48.716Z", }
+                })
+                self.assertEqual(cameras, [expected_camera])
 
     async def test_get_cameras_authentication_error(self):
         with SpypointServerForTest() as server:

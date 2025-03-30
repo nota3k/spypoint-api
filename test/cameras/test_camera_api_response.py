@@ -139,4 +139,22 @@ class TestCameraApiResponse(unittest.TestCase):
             }
         )
 
-        self.assertEqual(camera.notifications, ["low_battery", "{'survivalModeStart': '2024-12-14T12:00:30.000-00:00'}", "{'survivalModeEnd': '2024-12-15T08:00:58.000-00:00'}"])
+        self.assertEqual(camera.notifications, ["low_battery", "{'survivalModeStart': '2024-12-14T12:00:30.000-00:00'}",
+                                                "{'survivalModeEnd': '2024-12-15T08:00:58.000-00:00'}"])
+
+    def test_parses_share_field(self):
+        camera = CameraApiResponse.camera_from_json(
+            {
+                "ownerFirstName": "Philippe ",
+                "id": "id",
+                "config": {
+                    "name": "name",
+                },
+                "status": {
+                    "model": "model",
+                    "lastUpdate": "2024-10-30T02:03:48.716Z",
+                }
+            }
+        )
+
+        self.assertEqual(camera.share, "shared_by_philippe")
