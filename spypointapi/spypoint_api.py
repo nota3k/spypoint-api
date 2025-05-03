@@ -44,9 +44,21 @@ class SpypointApi:
     @staticmethod
     def _raise_on_authenticate_error(response: ClientResponse):
         if response.status == HTTPStatus.UNAUTHORIZED:
-            raise SpypointApiInvalidCredentialsError(response.request_info, response.history, status=response.status, message=response.reason, headers=response.headers)
+            raise SpypointApiInvalidCredentialsError(
+                response.request_info,
+                response.history,
+                status=response.status,
+                message=response.reason,
+                headers=response.headers,
+            )
         if not response.ok:
-            raise SpypointApiError(response.request_info, response.history, status=response.status, message=response.reason, headers=response.headers)
+            raise SpypointApiError(
+                response.request_info,
+                response.history,
+                status=response.status,
+                message=response.reason,
+                headers=response.headers,
+            )
 
     async def async_get_cameras(self) -> List[Camera]:
         own_cameras = await self.async_get_own_cameras()
@@ -79,8 +91,43 @@ class SpypointApi:
 
     def _raise_on_get_error(self, response: ClientResponse):
         if response.status == HTTPStatus.UNAUTHORIZED:
+            # force re-auth next call
             self.expires_at = datetime.now() - timedelta(seconds=1)
-            del self.headers['Authorization']
+            self.headers.pop('Authorization', None)
 
         if not response.ok:
-            raise SpypointApiError(response.request_info, response.history, status=response.status, message=response.reason, headers=response.headers)
+            raise SpypointApiError(
+                response.request_info,
+                response.history,
+                status=response.status,
+                message=response.reason,
+                headers=response.headers,
+            )
+
+    # --- New method added below ---
+
+    async def async_get_photo_count(self, camera_id: str) -> int:
+        """
+        Fetch the list of photos for a single camera and return the count.
+        Uses the /photo/all endpoint which returns a 'photos' list.
+        """
+        await self.async_authenticate()
+        payload = {'camera': [camera_id]}
+        async with self.session.post(f'{self.base_url}/photo/all', json=payload, headers=self.headers) as response:
+            # reuse the same error handling
+            if response.status == HTTPStatus.UNAUTHORIZED:
+                # on auth error, drop token to force re-auth next time
+                self.expires_at = datetime.now() - timedelta(seconds=1)
+                self.headers.pop('Authorization', None)
+            if not response.ok:
+                raise SpypointApiError(
+                    response.request_info,
+                    response.history,
+                    status=response.status,
+                    message=response.reason,
+                    headers=response.headers,
+                )
+            body = await response.json()
+            photos = body.get('photos', [])
+            # Return the number of photo entries
+            return len(photos)
