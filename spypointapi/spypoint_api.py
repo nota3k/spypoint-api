@@ -1,7 +1,7 @@
 import asyncio
 from datetime import datetime, timedelta
 from http import HTTPStatus
-from typing import List
+from typing import List, Dict
 import jwt
 from aiohttp import ClientSession, ClientResponse, ClientResponseError
 
@@ -49,11 +49,17 @@ class SpypointApi:
             raise SpypointApiError(response.request_info, response.history, status=response.status, message=response.reason, headers=response.headers)
 
     async def async_get_cameras(self) -> List[Camera]:
+        """
+        Fetches both own and shared cameras and returns a combined list of Camera objects.
+        """
         own_cameras = await self.async_get_own_cameras()
         shared_cameras = await self.async_get_shared_cameras()
         return own_cameras + shared_cameras
 
     async def async_get_own_cameras(self) -> List[Camera]:
+        """
+        Fetches the user's own cameras and parses them into Camera objects.
+        """
         await self.async_authenticate()
         async with self.session.get(f'{self.base_url}/camera/all', headers=self.headers) as response:
             self._raise_on_get_error(response)
@@ -61,6 +67,9 @@ class SpypointApi:
             return CameraApiResponse.from_json(body)
 
     async def async_get_shared_cameras(self) -> List[Camera]:
+        """
+        Fetches shared cameras and parses them into Camera objects.
+        """
         await self.async_authenticate()
         async with self.session.get(f'{self.base_url}/shared-cameras/all', headers=self.headers) as response:
             self._raise_on_get_error(response)
@@ -69,7 +78,10 @@ class SpypointApi:
             gets_by_id = [self._async_get_shared_camera(camera_id) for camera_id in camera_ids]
             return await asyncio.gather(*gets_by_id)
 
-    async def _async_get_shared_camera(self, camera_id) -> Camera:
+    async def _async_get_shared_camera(self, camera_id: str) -> Camera:
+        """
+        Fetches a single shared camera by its ID and parses it into a Camera object.
+        """
         await self.async_authenticate()
         async with self.session.get(f'{self.base_url}/shared-cameras/{camera_id}', headers=self.headers) as response:
             self._raise_on_get_error(response)
@@ -77,10 +89,47 @@ class SpypointApi:
             body['id'] = camera_id
             return CameraApiResponse.camera_from_json(body)
 
+    async def async_get_camera_model_details(self) -> List[Dict[str, str]]:
+        """
+        Fetches all the name and icon URLs from the /api/v3/camera/models endpoint.
+
+        :return: A list of dictionaries containing name and iconUrl.
+        """
+        await self.async_authenticate()
+        async with self.session.get(f'{self.base_url}/camera/models', headers=self.headers) as response:
+            self._raise_on_get_error(response)
+            body = await response.json()
+            return [
+                {"name": model.get("name", ""), "iconUrl": model.get("iconUrl", "")}
+                for model in body
+                if "name" in model and "iconUrl" in model
+            ]
+
+    async def async_get_camera_model_icons(self) -> List[str]:
+        """
+        Fetches all the icon URLs from the /api/v3/camera/models endpoint.
+
+        :return: A list of icon URLs.
+        """
+        await self.async_authenticate()
+        async with self.session.get(f'{self.base_url}/camera/models', headers=self.headers) as response:
+            self._raise_on_get_error(response)
+            body = await response.json()
+            return [model.get('iconUrl', '') for model in body if 'iconUrl' in model]
+
     def _raise_on_get_error(self, response: ClientResponse):
+        """
+        Handles errors during GET requests.
+        """
         if response.status == HTTPStatus.UNAUTHORIZED:
             self.expires_at = datetime.now() - timedelta(seconds=1)
             del self.headers['Authorization']
 
         if not response.ok:
-            raise SpypointApiError(response.request_info, response.history, status=response.status, message=response.reason, headers=response.headers)
+            raise SpypointApiError(
+                response.request_info,
+                response.history,
+                status=response.status,
+                message=response.reason,
+                headers=response.headers,
+            )

@@ -13,6 +13,25 @@ class TestCameraApiResponse(unittest.TestCase):
                 "id": "id",
                 "config": {
                     "name": "name",
+                    "captureMode": "photo",
+                    "motionDelay": 60,
+                    "multiShot": 1,
+                    "operationMode": "standard",
+                    "quality": "high",
+                    "sensibility": {
+                        "high": 9,
+                        "level": "low",
+                        "low": 35,
+                        "medium": 20
+                    },
+                    "timeFormat": 12,
+                    "timeLapse": 3600,
+                    "transmitAuto": True,
+                    "transmitFreq": 6,
+                    "transmitTime": {
+                        "hour": 6,
+                        "minute": 30
+                    },
                 },
                 "status": {
                     "model": "model",
@@ -53,6 +72,22 @@ class TestCameraApiResponse(unittest.TestCase):
         self.assertEqual(camera.battery_type, "12V")
         self.assertEqual(camera.memory, 10)
         self.assertEqual(camera.notifications, ["missing_sd_card"])
+        self.assertEqual(camera.capture_mode, "photo")
+        self.assertEqual(camera.motion_delay, 60)
+        self.assertEqual(camera.multi_shot, 1)
+        self.assertEqual(camera.operation_mode, "standard")
+        self.assertEqual(camera.quality, "high")
+        self.assertEqual(camera.sensibility, {
+            "high": 9,
+            "level": "low",
+            "low": 35,
+            "medium": 20
+        })
+        self.assertEqual(camera.time_format, 12)
+        self.assertEqual(camera.time_lapse, 3600)
+        self.assertTrue(camera.transmit_auto)
+        self.assertEqual(camera.transmit_freq, 6)
+        self.assertEqual(camera.transmit_time, {"hour": 6, "minute": 30})
 
     def test_parses_missing_fields(self):
         camera = CameraApiResponse.camera_from_json(

@@ -5,6 +5,10 @@ from http import HTTPStatus
 import aiohttp
 import jwt
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from spypointapi import SpypointApi
 from spypointapi.cameras.camera_api_response import CameraApiResponse
 from spypointapi.spypoint_api import SpypointApiInvalidCredentialsError, SpypointApiError
@@ -57,23 +61,53 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
             cameras_response = [
                 {
                     "id": "1",
+                    "activationDate": "2023-05-22T03:01:24.575Z",
                     "config": {
                         "name": "camera 1",
+                        "captureMode": "photo",
+                        "motionDelay": 60,
+                        "multiShot": 1,
+                        "operationMode": "standard",
+                        "quality": "high",
+                        "sensibility": {
+                            "high": 9,
+                            "level": "low",
+                            "low": 35,
+                            "medium": 20
+                        },
+                        "timeFormat": 12,
+                        "timeLapse": 3600,
+                        "transmitAuto": True,
+                        "transmitFreq": 6,
+                        "transmitTime": {
+                            "hour": 6,
+                            "minute": 30
+                        },
                     },
                     "status": {
                         "model": "model",
                         "lastUpdate": "2024-10-30T02:03:48.716Z",
-                    }
-                },
-                {
-                    "id": "2",
-                    "config": {
-                        "name": "camera 2",
+                        "batteries": [73],
+                        "temperature": {"value": 51, "unit": "C"},  # Added "unit" key
+                        "signal": {"processed": {"percentage": 77}},
                     },
-                    "status": {
-                        "model": "model",
-                        "lastUpdate": "2024-10-30T02:03:48.716Z",
-                    }
+                    "isCellular": True,
+                    "subscriptions": [
+                        {
+                            "paymentFrequency": "annual",
+                            "isFree": True,
+                            "startDateBillingCycle": "2024-09-04T12:54:53.421Z",
+                            "monthEndBillingCycle": "2025-06-04T12:32:26.000Z",
+                            "endDateBillingCycle": "2025-09-04T12:32:26.000Z",
+                            "photoCount": 1,
+                            "plan": {
+                                "name": "Basic",
+                                "isActive": True,
+                                "isFree": True,
+                                "photoCountPerMonth": 250,
+                            },
+                        }
+                    ],
                 }
             ]
 
@@ -91,6 +125,26 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
 
                 expected_cameras = CameraApiResponse.from_json(cameras_response)
                 self.assertEqual(cameras, expected_cameras)
+
+                # Validate new fields
+                camera = cameras[0]
+                self.assertEqual(camera.capture_mode, "photo")
+                self.assertEqual(camera.motion_delay, 60)
+                self.assertEqual(camera.multi_shot, 1)
+                self.assertEqual(camera.operation_mode, "standard")
+                self.assertEqual(camera.quality, "high")
+                self.assertEqual(camera.sensibility, {
+                    "high": 9,
+                    "level": "low",
+                    "low": 35,
+                    "medium": 20
+                })
+                self.assertEqual(camera.time_format, 12)
+                self.assertEqual(camera.time_lapse, 3600)
+                self.assertTrue(camera.transmit_auto)
+                self.assertEqual(camera.transmit_freq, 6)
+                self.assertEqual(camera.transmit_time, {"hour": 6, "minute": 30})
+                self.assertEqual(camera.temperature, 51)  # Validate temperature
 
     async def test_get_shared_cameras(self):
         with SpypointServerForTest() as server:
@@ -140,3 +194,94 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
 
                 self.assertLess(api.expires_at, datetime.now())
                 self.assertIsNone(api.headers.get('Authorization'))
+
+    async def test_parse_camera_with_subscriptions(self):
+        camera_json = {
+            "id": "1",
+            "config": {"name": "Test Camera"},
+            "status": {"model": "Model1", "lastUpdate": "2025-05-04T16:50:03.000Z"},
+            "subscriptions": [
+                {
+                    "paymentFrequency": "annual",
+                    "isFree": True,
+                    "startDateBillingCycle": "2024-09-04T12:54:53.421Z",
+                    "endDateBillingCycle": "2025-09-04T12:32:26.000Z",
+                    "monthEndBillingCycle": "2025-06-04T12:32:26.000Z",
+                    "photoCount": 1,
+                    "hdPhotoCount": 0,
+                    "photoLimit": 250,
+                    "hdPhotoLimit": 0,
+                    "isAutoRenew": False,
+                    "plan": {
+                        "name": "Basic",
+                        "isActive": True,
+                        "isFree": True,
+                        "photoCountPerMonth": 250,
+                    },
+                }
+            ],
+        }
+
+        camera = CameraApiResponse.camera_from_json(camera_json)
+        self.assertEqual(camera.id, "1")
+        self.assertEqual(camera.name, "Test Camera")
+        self.assertEqual(len(camera.subscriptions), 1)
+
+        subscription = camera.subscriptions[0]
+        self.assertEqual(subscription.payment_frequency, "annual")
+        self.assertTrue(subscription.is_free)
+        self.assertEqual(subscription.photo_count, 1)
+        self.assertEqual(subscription.plan.name, "Basic")
+        self.assertTrue(subscription.plan.is_active)
+        self.assertEqual(subscription.plan.photo_count_per_month, 250)
+
+    async def test_parse_camera_with_new_fields(self):
+        camera_json = {
+            "id": "1",
+            "config": {
+                "name": "Test Camera",
+                "captureMode": "photo",
+                "motionDelay": 60,
+                "multiShot": 1,
+                "operationMode": "standard",
+                "quality": "high",
+                "sensibility": {
+                    "high": 9,
+                    "level": "low",
+                    "low": 35,
+                    "medium": 20
+                },
+                "timeFormat": 12,
+                "timeLapse": 3600,
+                "transmitAuto": True,
+                "transmitFreq": 6,
+                "transmitTime": {
+                    "hour": 6,
+                    "minute": 30
+                },
+            },
+            "status": {
+                "model": "Model1",
+                "lastUpdate": "2025-05-04T16:50:03.000Z",
+            },
+        }
+
+        camera = CameraApiResponse.camera_from_json(camera_json)
+        self.assertEqual(camera.id, "1")
+        self.assertEqual(camera.name, "Test Camera")
+        self.assertEqual(camera.capture_mode, "photo")
+        self.assertEqual(camera.motion_delay, 60)
+        self.assertEqual(camera.multi_shot, 1)
+        self.assertEqual(camera.operation_mode, "standard")
+        self.assertEqual(camera.quality, "high")
+        self.assertEqual(camera.sensibility, {
+            "high": 9,
+            "level": "low",
+            "low": 35,
+            "medium": 20
+        })
+        self.assertEqual(camera.time_format, 12)
+        self.assertEqual(camera.time_lapse, 3600)
+        self.assertTrue(camera.transmit_auto)
+        self.assertEqual(camera.transmit_freq, 6)
+        self.assertEqual(camera.transmit_time, {"hour": 6, "minute": 30})
