@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 
 from spypointapi import Camera
@@ -6,120 +6,166 @@ from spypointapi.cameras.camera import Coordinates, Plan, Subscription
 
 
 class CameraApiResponse:
+    """Handles parsing of camera-related API responses."""
 
     @classmethod
     def from_json(cls, data: List[Dict[str, Any]]) -> List[Camera]:
-        return [CameraApiResponse.camera_from_json(d) for d in data]
+        """Parses a list of cameras from JSON."""
+        return [cls.camera_from_json(d) for d in data]
 
     @classmethod
     def camera_from_json(cls, data: Dict[str, Any]) -> Camera:
-        config = data.get('config', {})
-        status = data.get('status', {})
+        """Parses a single camera from JSON."""
+        config = data.get("config", {})
+        status = data.get("status", {})
+
         return Camera(
-            id=data['id'],
-            name=config.get('name', ''),
-            model=status.get('model', ''),
-            modem_firmware=status.get('modemFirmware', ''),
-            camera_firmware=status.get('version', ''),
-            last_update_time=datetime.fromisoformat(status['lastUpdate'][:-1]).replace(tzinfo=datetime.now().astimezone().tzinfo),
-            signal=status.get('signal', {}).get('processed', {}).get('percentage', None),
-            temperature=CameraApiResponse.temperature_from_json(status.get('temperature', None)),
-            battery=CameraApiResponse.battery_from_json(status.get('batteries', None)),
-            battery_type=status.get('batteryType', None),
-            memory=CameraApiResponse.memory_from_json(status.get('memory', None)),
-            memory_size=CameraApiResponse.memory_size_from_json(status.get('memory', None)),
-            notifications=CameraApiResponse.notifications_from_json(status.get('notifications', None)),
-            owner=CameraApiResponse.owner_from_json(data),
-            coordinates=CameraApiResponse.coordinates_from_json(status.get('coordinates', None)),
-            subscriptions=CameraApiResponse.subscriptions_from_json(data.get('subscriptions', [])),
-            capture_mode=config.get('captureMode', None),
-            motion_delay=config.get('motionDelay', None),
-            multi_shot=config.get('multiShot', None),
-            operation_mode=config.get('operationMode', None),
-            quality=config.get('quality', None),
-            sensibility=config.get('sensibility', None),
-            time_format=config.get('timeFormat', None),
-            time_lapse=config.get('timeLapse', None),
-            transmit_auto=config.get('transmitAuto', None),
-            transmit_freq=config.get('transmitFreq', None),
-            transmit_time=config.get('transmitTime', None),
+            id=data["id"],
+            name=cls._parse_config_field(config, "name", default=""),
+            model=cls._parse_status_field(status, "model", default=""),
+            modem_firmware=cls._parse_status_field(status, "modemFirmware", default=""),
+            camera_firmware=cls._parse_status_field(status, "version", default=""),
+            last_update_time=cls._parse_datetime(cls._parse_status_field(status, "lastUpdate")),
+            activation_date=cls._parse_datetime(data.get("activationDate")),
+            creation_date=cls._parse_datetime(data.get("creationDate")),  # New field
+            install_date=cls._parse_datetime(data.get("installDate")),  # New field
+            signal=cls._parse_signal(status),
+            temperature=cls.temperature_from_json(status.get("temperature")),
+            battery=cls.battery_from_json(status.get("batteries")),
+            battery_type=cls._parse_status_field(status, "batteryType"),
+            memory=cls.memory_from_json(status.get("memory")),
+            memory_size=cls.memory_size_from_json(status.get("memory")),
+            notifications=cls.notifications_from_json(status.get("notifications")),
+            owner=cls.owner_from_json(data),
+            coordinates=cls.coordinates_from_json(status.get("coordinates")),
+            subscriptions=cls.subscriptions_from_json(data.get("subscriptions", [])),
+            capture_mode=cls._parse_config_field(config, "captureMode"),
+            motion_delay=cls._parse_config_field(config, "motionDelay"),
+            multi_shot=cls._parse_config_field(config, "multiShot"),
+            operation_mode=cls._parse_config_field(config, "operationMode"),
+            quality=cls._parse_config_field(config, "quality"),
+            sensibility=cls._parse_config_field(config, "sensibility"),
+            time_format=cls._parse_config_field(config, "timeFormat"),
+            time_lapse=cls._parse_config_field(config, "timeLapse"),
+            transmit_auto=cls._parse_config_field(config, "transmitAuto"),
+            transmit_freq=cls._parse_config_field(config, "transmitFreq"),
+            transmit_time=cls._parse_config_field(config, "transmitTime"),
         )
 
-    @classmethod
-    def temperature_from_json(cls, temperature: Optional[Dict[str, Any]]) -> Optional[int]:
-        if not temperature:
+    @staticmethod
+    def _parse_config_field(config: Dict[str, Any], field: str, default: Any = None) -> Any:
+        """Safely parses a field from the config dictionary."""
+        return config.get(field, default)
+
+    @staticmethod
+    def _parse_status_field(status: Dict[str, Any], field: str, default: Any = None) -> Any:
+        """Safely parses a field from the status dictionary."""
+        return status.get(field, default)
+
+    @staticmethod
+    def _parse_datetime(value: Optional[str]) -> Optional[datetime]:
+        """Parses an ISO 8601 datetime string."""
+        if not value:
             return None
-        if temperature['unit'] == 'C':
-            return temperature['value']
-        return int((temperature['value'] - 32) * 5 / 9)
+        try:
+            # Parse the datetime and set it to UTC
+            return datetime.fromisoformat(value[:-1]).replace(tzinfo=timezone.utc)
+        except ValueError:
+            # Log the error or handle it gracefully
+            print(f"Invalid ISO 8601 datetime string: {value}")
+            return None
+
+    @staticmethod
+    def _parse_signal(status: Dict[str, Any]) -> Optional[float]:
+        """Parses the signal strength from the status dictionary."""
+        return status.get("signal", {}).get("processed", {}).get("percentage")
 
     @classmethod
-    def battery_from_json(cls, batteries: Optional[Dict[str, Any]]) -> Optional[str]:
+    def temperature_from_json(cls, temperature: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        """
+        Parses the temperature field and supports both Fahrenheit (F) and Celsius (C).
+
+        :param temperature: A dictionary containing temperature data.
+        :return: A dictionary with the temperature value and its unit, or None if not available.
+        """
+        if not temperature:
+            return None
+        return {
+            "value": temperature.get("value"),
+            "unit": temperature.get("unit", "C")  # Default to Celsius if the unit is missing
+        }
+
+    @classmethod
+    def battery_from_json(cls, batteries: Optional[List[int]]) -> Optional[int]:
+        """Parses the battery field."""
         if not batteries:
             return None
         return max(batteries)
 
     @classmethod
     def memory_from_json(cls, memory: Optional[Dict[str, Any]]) -> Optional[float]:
-        if not memory:
+        """Parses the memory usage as a percentage."""
+        if not memory or memory.get("size", 0) == 0:
             return None
-        if memory.get('size', 0) == 0:
-            return None
-        return round(memory.get('used') / memory.get('size') * 100, 2)
+        return round(memory.get("used", 0) / memory["size"] * 100, 2)
 
     @classmethod
     def memory_size_from_json(cls, memory: Optional[Dict[str, Any]]) -> Optional[int]:
-        if not memory or 'size' not in memory:
-            return None
-        return memory.get('size')
+        """Parses the memory size."""
+        return memory.get("size") if memory else None
 
     @classmethod
-    def notifications_from_json(cls, notifications: Optional[Dict[str, Any]]) -> Optional[List[str]]:
-        if notifications is None:
+    def notifications_from_json(cls, notifications: Optional[List[Any]]) -> Optional[List[str]]:
+        """Parses the notifications field."""
+        if not notifications:
             return None
         return [str(notification) for notification in notifications]
 
     @classmethod
-    def owner_from_json(cls, data):
-        owner = data.get('ownerFirstName', None)
-        if owner is None:
-            return None
-        return owner.strip()
+    def owner_from_json(cls, data: Dict[str, Any]) -> Optional[str]:
+        """Parses the owner field."""
+        owner = data.get("ownerFirstName")
+        return owner.strip() if owner else None
 
     @classmethod
-    def coordinates_from_json(cls, coordinates: Optional[List[Any]]) -> Optional[Coordinates]:
-        if (coordinates is None
-                or len(coordinates) < 1
-                or coordinates[0].get('position', {}).get('type', '') != 'Point'
-                or len(coordinates[0].get('position', {}).get('coordinates', [])) != 2):
+    def coordinates_from_json(cls, coordinates: Optional[List[Dict[str, Any]]]) -> Optional[Coordinates]:
+        """Parses the coordinates field."""
+        if not coordinates or len(coordinates) < 1:
             return None
-        lat_lon = coordinates[0]['position']['coordinates']
+        position = coordinates[0].get("position", {})
+        if position.get("type") != "Point":
+            return None
+        lat_lon = position.get("coordinates", [])
+        if len(lat_lon) != 2:
+            return None
         return Coordinates(latitude=lat_lon[1], longitude=lat_lon[0])
 
     @classmethod
     def subscriptions_from_json(cls, subscriptions: List[Dict[str, Any]]) -> List[Subscription]:
+        """Parses the subscriptions field."""
         return [
             Subscription(
-                payment_frequency=sub.get('paymentFrequency', ''),
-                is_free=sub.get('isFree', False),
-                start_date_billing_cycle=datetime.fromisoformat(sub['startDateBillingCycle']),
-                end_date_billing_cycle=datetime.fromisoformat(sub['endDateBillingCycle']),
-                month_end_billing_cycle=datetime.fromisoformat(sub['monthEndBillingCycle']),
-                photo_count=sub.get('photoCount', 0),
-                hd_photo_count=sub.get('hdPhotoCount', 0),
-                photo_limit=sub.get('photoLimit', 0),
-                hd_photo_limit=sub.get('hdPhotoLimit', 0),
-                is_auto_renew=sub.get('isAutoRenew', False),
-                plan=CameraApiResponse.plan_from_json(sub.get('plan', {})),  # Add this line to parse the plan
+                payment_frequency=sub.get("paymentFrequency", ""),
+                is_free=sub.get("isFree", False),
+                start_date_billing_cycle=cls._parse_datetime(sub.get("startDateBillingCycle")),
+                end_date_billing_cycle=cls._parse_datetime(sub.get("endDateBillingCycle")),
+                month_end_billing_cycle=cls._parse_datetime(sub.get("monthEndBillingCycle")),
+                photo_count=sub.get("photoCount", 0),
+                hd_photo_count=sub.get("hdPhotoCount", 0),
+                photo_limit=sub.get("photoLimit", 0),
+                hd_photo_limit=sub.get("hdPhotoLimit", 0),
+                is_auto_renew=sub.get("isAutoRenew", False),
+                plan=cls.plan_from_json(sub.get("plan", {})) if sub.get("plan") else None,
             )
             for sub in subscriptions
         ]
 
     @classmethod
     def plan_from_json(cls, plan: Dict[str, Any]) -> Plan:
+        """Parses the plan field."""
         return Plan(
-            name=plan.get('name', ''),
-            is_active=plan.get('isActive', False),
-            is_free=plan.get('isFree', False),
-            photo_count_per_month=plan.get('photoCountPerMonth', 0),
+            name=plan.get("name", ""),
+            is_active=plan.get("isActive", False),
+            is_free=plan.get("isFree", False),
+            photo_count_per_month=plan.get("photoCountPerMonth", 0),
         )

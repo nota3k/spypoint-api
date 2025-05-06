@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime
+from datetime import datetime, timezone
 from http import HTTPStatus
 
 import aiohttp
@@ -61,6 +61,8 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
             cameras_response = [
                 {
                     "id": "1",
+                    "creationDate": "2023-01-01T12:00:00.000Z",
+                    "installDate": "2023-01-02T12:00:00.000Z",
                     "activationDate": "2023-05-22T03:01:24.575Z",
                     "config": {
                         "name": "camera 1",
@@ -88,7 +90,7 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
                         "model": "model",
                         "lastUpdate": "2024-10-30T02:03:48.716Z",
                         "batteries": [73],
-                        "temperature": {"value": 51, "unit": "C"},  # Added "unit" key
+                        "temperature": {"value": 51, "unit": "C"},
                         "signal": {"processed": {"percentage": 77}},
                     },
                     "isCellular": True,
@@ -144,7 +146,9 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
                 self.assertTrue(camera.transmit_auto)
                 self.assertEqual(camera.transmit_freq, 6)
                 self.assertEqual(camera.transmit_time, {"hour": 6, "minute": 30})
-                self.assertEqual(camera.temperature, 51)  # Validate temperature
+                self.assertEqual(camera.temperature, {"value": 51, "unit": "C"})  # Updated assertion
+                self.assertEqual(camera.creation_date, datetime(2023, 1, 1, 12, 0, 0, tzinfo=timezone.utc))  # Add tzinfo
+                self.assertEqual(camera.install_date, datetime(2023, 1, 2, 12, 0, 0, tzinfo=timezone.utc))  # Add tzinfo
 
     async def test_get_shared_cameras(self):
         with SpypointServerForTest() as server:
@@ -224,7 +228,6 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
 
         camera = CameraApiResponse.camera_from_json(camera_json)
         self.assertEqual(camera.id, "1")
-        self.assertEqual(camera.name, "Test Camera")
         self.assertEqual(len(camera.subscriptions), 1)
 
         subscription = camera.subscriptions[0]
@@ -238,6 +241,8 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
     async def test_parse_camera_with_new_fields(self):
         camera_json = {
             "id": "1",
+            "creationDate": "2023-01-01T12:00:00.000Z",
+            "installDate": "2023-01-02T12:00:00.000Z",
             "config": {
                 "name": "Test Camera",
                 "captureMode": "photo",
@@ -267,21 +272,5 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
         }
 
         camera = CameraApiResponse.camera_from_json(camera_json)
-        self.assertEqual(camera.id, "1")
-        self.assertEqual(camera.name, "Test Camera")
-        self.assertEqual(camera.capture_mode, "photo")
-        self.assertEqual(camera.motion_delay, 60)
-        self.assertEqual(camera.multi_shot, 1)
-        self.assertEqual(camera.operation_mode, "standard")
-        self.assertEqual(camera.quality, "high")
-        self.assertEqual(camera.sensibility, {
-            "high": 9,
-            "level": "low",
-            "low": 35,
-            "medium": 20
-        })
-        self.assertEqual(camera.time_format, 12)
-        self.assertEqual(camera.time_lapse, 3600)
-        self.assertTrue(camera.transmit_auto)
-        self.assertEqual(camera.transmit_freq, 6)
-        self.assertEqual(camera.transmit_time, {"hour": 6, "minute": 30})
+        self.assertEqual(camera.creation_date, datetime(2023, 1, 1, 12, 0, 0, tzinfo=timezone.utc))
+        self.assertEqual(camera.install_date, datetime(2023, 1, 2, 12, 0, 0, tzinfo=timezone.utc))

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import TypeAlias, List, Dict, Any
+from typing import TypeAlias, List, Dict, Any, Optional
 
 Percentage: TypeAlias = float
 Celsius: TypeAlias = int
@@ -33,38 +33,41 @@ class Subscription:
     photo_limit: int
     hd_photo_limit: int
     is_auto_renew: bool
-    plan: Plan | None = None  # Add this line to include the plan details
+    plan: Plan | None = None
 
 
-@dataclass()
+@dataclass
 class Camera:
     id: str
     name: str
     model: str
     modem_firmware: str
     camera_firmware: str
-    last_update_time: datetime
-    signal: Percentage | None = None
-    temperature: Celsius | None = None
-    battery: Percentage | None = None
-    battery_type: str | None = None
-    memory: Percentage | None = None
-    memory_size: int | None = None
-    notifications: List[str] | None = None
-    owner: str | None = None
-    coordinates: Coordinates | None = None
-    subscriptions: List[Subscription] | None = None
-    capture_mode: str | None = None
-    motion_delay: int | None = None
-    multi_shot: int | None = None
-    operation_mode: str | None = None
-    quality: str | None = None
-    sensibility: Dict[str, Any] | None = None
-    time_format: int | None = None
-    time_lapse: int | None = None
-    transmit_auto: bool | None = None
-    transmit_freq: int | None = None
-    transmit_time: Dict[str, int] | None = None  # Add these fields
+    last_update_time: Optional[datetime]
+    activation_date: Optional[datetime]
+    creation_date: Optional[datetime]  # New field
+    install_date: Optional[datetime]  # New field
+    signal: Optional[float]
+    temperature: Optional[Dict[str, Any]]  # Supports {"value": int, "unit": str}
+    battery: Optional[int]
+    battery_type: Optional[str]
+    memory: Optional[float]
+    memory_size: Optional[int]
+    notifications: Optional[List[str]]
+    owner: Optional[str]
+    coordinates: Optional[Dict[str, float]]  # Supports {"latitude": float, "longitude": float}
+    subscriptions: Optional[List[Any]]  # List of Subscription objects
+    capture_mode: Optional[str]
+    motion_delay: Optional[int]
+    multi_shot: Optional[int]
+    operation_mode: Optional[str]
+    quality: Optional[str]
+    sensibility: Optional[Dict[str, Any]]  # Supports {"high": int, "medium": int, "low": int}
+    time_format: Optional[int]
+    time_lapse: Optional[int]
+    transmit_auto: Optional[bool]
+    transmit_freq: Optional[int]
+    transmit_time: Optional[Dict[str, int]]  # Supports {"hour": int, "minute": int}
 
     @property
     def is_online(self) -> bool:
@@ -73,17 +76,37 @@ class Camera:
         return diff <= timedelta(hours=24)
 
     def __str__(self) -> str:
-        return (f"Camera(id={self.id}, name={self.name}, model={self.model}, "
-                f"modem_firmware={self.modem_firmware}, camera_firmware={self.camera_firmware}, "
-                f"last_update_time={self.last_update_time}, signal={self.signal}, "
-                f"temperature={self.temperature}, battery={self.battery}, battery_type={self.battery_type}, "
-                f"memory={self.memory}, memory_size={self.memory_size}, "
-                f"capture_mode={self.capture_mode}, motion_delay={self.motion_delay}, "
-                f"multi_shot={self.multi_shot}, operation_mode={self.operation_mode}, "
-                f"quality={self.quality}, sensibility={self.sensibility}, "
-                f"time_format={self.time_format}, time_lapse={self.time_lapse}, "
-                f"transmit_auto={self.transmit_auto}, transmit_freq={self.transmit_freq}, "
-                f"transmit_time={self.transmit_time}, "
-                f"subscriptions={self.subscriptions}, "
-                f"notifications={self.notifications}, online={self.is_online}), "
-                f"owner={self.owner}, coordinates={self.coordinates})")
+        return f"Camera({self._format_attributes()})"
+
+    def _format_attributes(self) -> str:
+        attributes = [
+            f"id={self.id}",
+            f"name={self.name}",
+            f"model={self.model}",
+            f"modem_firmware={self.modem_firmware}",
+            f"camera_firmware={self.camera_firmware}",
+            f"last_update_time={self.last_update_time}",
+            f"signal={self.signal}",
+            f"temperature={self.temperature}",
+            f"battery={self.battery}",
+            f"battery_type={self.battery_type}",
+            f"memory={self.memory}",
+            f"memory_size={self.memory_size}",
+            f"capture_mode={self.capture_mode}",
+            f"motion_delay={self.motion_delay}",
+            f"multi_shot={self.multi_shot}",
+            f"operation_mode={self.operation_mode}",
+            f"quality={self.quality}",
+            f"sensibility={self.sensibility}",
+            f"time_format={self.time_format}",
+            f"time_lapse={self.time_lapse}",
+            f"transmit_auto={self.transmit_auto}",
+            f"transmit_freq={self.transmit_freq}",
+            f"transmit_time={self.transmit_time}",
+            f"subscriptions={self.subscriptions}",
+            f"notifications={self.notifications}",
+            f"online={self.is_online}",
+            f"owner={self.owner}",
+            f"coordinates={self.coordinates}",
+        ]
+        return ", ".join(attributes)

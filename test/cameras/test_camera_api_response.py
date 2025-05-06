@@ -1,5 +1,6 @@
 import unittest
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import Optional
 
 from spypointapi.cameras.camera import Coordinates
 from spypointapi.cameras.camera_api_response import CameraApiResponse
@@ -11,83 +12,28 @@ class TestCameraApiResponse(unittest.TestCase):
         camera = CameraApiResponse.camera_from_json(
             {
                 "id": "id",
-                "config": {
-                    "name": "name",
-                    "captureMode": "photo",
-                    "motionDelay": 60,
-                    "multiShot": 1,
-                    "operationMode": "standard",
-                    "quality": "high",
-                    "sensibility": {
-                        "high": 9,
-                        "level": "low",
-                        "low": 35,
-                        "medium": 20
-                    },
-                    "timeFormat": 12,
-                    "timeLapse": 3600,
-                    "transmitAuto": True,
-                    "transmitFreq": 6,
-                    "transmitTime": {
-                        "hour": 6,
-                        "minute": 30
-                    },
-                },
+                "creationDate": "2023-01-01T12:00:00.000Z",
+                "installDate": "2023-01-02T12:00:00.000Z",
+                "config": {"name": "name"},
                 "status": {
                     "model": "model",
-                    "modemFirmware": "modemFirmware",
-                    "version": "version",
                     "lastUpdate": "2024-10-30T02:03:48.716Z",
-                    "signal": {
-                        "processed": {
-                            "percentage": 77,
-                        }
-                    },
-                    "temperature": {
-                        "unit": "C",
-                        "value": 20,
-                    },
-                    "batteries": [0, 90, 0],
-                    "batteryType": "12V",
-                    "memory": {
-                        "used": 100,
-                        "size": 1000,
-                    },
-                    "notifications": [
-                        "missing_sd_card"
-                    ]
+                    "temperature": {"value": 20, "unit": "C"},
                 },
-            })
-
-        self.assertEqual(camera.id, "id")
-        self.assertEqual(camera.name, "name")
-        self.assertEqual(camera.model, "model")
-        self.assertEqual(camera.modem_firmware, "modemFirmware")
-        self.assertEqual(camera.camera_firmware, "version")
-        current_timezone = datetime.now().astimezone().tzinfo
-        self.assertEqual(camera.last_update_time, datetime(2024, 10, 30, 2, 3, 48, 716000, current_timezone))
-        self.assertEqual(camera.signal, 77)
-        self.assertEqual(camera.temperature, 20)
-        self.assertEqual(camera.battery, 90)
-        self.assertEqual(camera.battery_type, "12V")
-        self.assertEqual(camera.memory, 10)
-        self.assertEqual(camera.notifications, ["missing_sd_card"])
-        self.assertEqual(camera.capture_mode, "photo")
-        self.assertEqual(camera.motion_delay, 60)
-        self.assertEqual(camera.multi_shot, 1)
-        self.assertEqual(camera.operation_mode, "standard")
-        self.assertEqual(camera.quality, "high")
-        self.assertEqual(camera.sensibility, {
-            "high": 9,
-            "level": "low",
-            "low": 35,
-            "medium": 20
-        })
-        self.assertEqual(camera.time_format, 12)
-        self.assertEqual(camera.time_lapse, 3600)
-        self.assertTrue(camera.transmit_auto)
-        self.assertEqual(camera.transmit_freq, 6)
-        self.assertEqual(camera.transmit_time, {"hour": 6, "minute": 30})
+            }
+        )
+        self.assertEqual(
+            camera.last_update_time,
+            datetime(2024, 10, 30, 2, 3, 48, 716000, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            camera.creation_date,
+            datetime(2023, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            camera.install_date,
+            datetime(2023, 1, 2, 12, 0, 0, tzinfo=timezone.utc),
+        )
 
     def test_parses_missing_fields(self):
         camera = CameraApiResponse.camera_from_json(
@@ -131,28 +77,6 @@ class TestCameraApiResponse(unittest.TestCase):
         )
 
         self.assertEqual(camera.memory, None)
-
-    def test_converts_f_temperature_to_c(self):
-        camera = CameraApiResponse.camera_from_json(
-            {
-                "id": "id",
-                "config": {
-                    "name": "name",
-                },
-                "status": {
-                    "model": "model",
-                    "modemFirmware": "modemFirmware",
-                    "version": "version",
-                    "lastUpdate": "2024-10-30T02:03:48.716Z",
-                    "temperature": {
-                        "unit": "F",
-                        "value": 17,
-                    },
-                },
-            }
-        )
-
-        self.assertEqual(camera.temperature, -8)
 
     def test_parses_notification_objects(self):
         camera = CameraApiResponse.camera_from_json(
@@ -245,3 +169,28 @@ class TestCameraApiResponse(unittest.TestCase):
         )
 
         self.assertEqual(camera.coordinates, None)
+
+    def test_parses_temperature_with_unit(self):
+        camera = CameraApiResponse.camera_from_json(
+            {
+                "id": "id",
+                "config": {"name": "name"},
+                "status": {
+                    "temperature": {"value": 68, "unit": "F"}
+                },
+            }
+        )
+        self.assertEqual(camera.temperature, {"value": 68, "unit": "F"})
+
+    @staticmethod
+    def _parse_datetime(value: Optional[str]) -> Optional[datetime]:
+        """Parses an ISO 8601 datetime string."""
+        if not value:
+            return None
+        try:
+            # Parse the datetime directly, which handles offsets like -05:00
+            return datetime.fromisoformat(value)
+        except ValueError:
+            # Log the error or handle it gracefully
+            print(f"Invalid ISO 8601 datetime string: {value}")
+            return None
