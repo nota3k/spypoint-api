@@ -2,8 +2,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional, Union
 
 from spypointapi import Camera
-from spypointapi.cameras.camera import Coordinates, Plan, Subscription # Changed: Import Subscription from camera.py
-
+from spypointapi.cameras.camera import Coordinates
 
 class CameraApiResponse:
     """Handles parsing of camera-related API responses."""
@@ -38,7 +37,7 @@ class CameraApiResponse:
             notifications=cls.notifications_from_json(status.get("notifications")),
             owner=cls.owner_from_json(data),
             coordinates=cls.coordinates_from_json(data.get("coordinates")), # Changed: Get coordinates from root data
-            subscriptions=cls.subscriptions_from_json(data.get("subscriptions", [])),  
+            # subscriptions=cls.subscriptions_from_json(data.get("subscriptions", [])),  
             capture_mode=cls._parse_config_field(config, "captureMode"),
             # delay=cls._parse_config_field(config, "delay"),
             motion_delay=cls._parse_config_field(config, "motionDelay"),
@@ -155,44 +154,44 @@ class CameraApiResponse:
 
         return Coordinates(latitude=latitude, longitude=longitude)
 
-    @classmethod
-    def subscriptions_from_json(cls, subscriptions: List[Dict[str, Any]]) -> List[Subscription]: # Changed: Corrected type hint
-        """Parses the subscriptions field."""
-        result = []
-        for sub in subscriptions:
-            plan_data = sub.get("plan")
-            parsed_plan = cls.plan_from_json(plan_data) if plan_data else None
+    # @classmethod
+    # def subscriptions_from_json(cls, subscriptions: List[Dict[str, Any]]) -> List[Subscription]: # Changed: Corrected type hint
+    #     """Parses the subscriptions field."""
+    #     result = []
+    #     for sub in subscriptions:
+    #         plan_data = sub.get("plan")
+    #         parsed_plan = cls.plan_from_json(plan_data) if plan_data else None
 
-            subscription_item = Subscription(
-                # Plan related
-                plan=parsed_plan,
-                # Photo counts and limits
-                photo_count=sub.get("photoCount", 0),
-                photo_limit=sub.get("photoLimit", 0),
-                hd_photo_count=sub.get("hdPhotoCount", 0),
-                hd_photo_limit=sub.get("hdPhotoLimit", 0),
-                # Billing cycle dates
-                start_date_billing_cycle=cls._parse_datetime(sub.get("startDateBillingCycle")),
-                end_date_billing_cycle=cls._parse_datetime(sub.get("endDateBillingCycle")),
-                month_end_billing_cycle=cls._parse_datetime(sub.get("monthEndBillingCycle")),
-                # Payment and renewal
-                payment_frequency=sub.get("paymentFrequency", ""),
-                is_auto_renew=sub.get("isAutoRenew", False),
-                is_free=sub.get("isFree", False),
-            )
-            result.append(subscription_item)
-        return result
+    #         subscription_item = Subscription(
+    #             # Plan related
+    #             plan=parsed_plan,
+    #             # Photo counts and limits
+    #             photo_count=sub.get("photoCount", 0),
+    #             photo_limit=sub.get("photoLimit", 0),
+    #             hd_photo_count=sub.get("hdPhotoCount", 0),
+    #             hd_photo_limit=sub.get("hdPhotoLimit", 0),
+    #             # Billing cycle dates
+    #             start_date_billing_cycle=cls._parse_datetime(sub.get("startDateBillingCycle")),
+    #             end_date_billing_cycle=cls._parse_datetime(sub.get("endDateBillingCycle")),
+    #             month_end_billing_cycle=cls._parse_datetime(sub.get("monthEndBillingCycle")),
+    #             # Payment and renewal
+    #             payment_frequency=sub.get("paymentFrequency", ""),
+    #             is_auto_renew=sub.get("isAutoRenew", False),
+    #             is_free=sub.get("isFree", False),
+    #         )
+    #         result.append(subscription_item)
+    #     return result
 
-    @classmethod
-    def plan_from_json(cls, plan: Dict[str, Any]) -> Plan:
-        """Parses the plan field."""
-        photo_count = plan.get("photoCountPerMonth", 0)
-        return Plan(
-            name=plan.get("name", ""),
-            is_active=plan.get("isActive", False),
-            is_free=plan.get("isFree", False),
-            photo_count_per_month="Unlimited" if photo_count == 0 else photo_count,
-        )
+    # @classmethod
+    # def plan_from_json(cls, plan: Dict[str, Any]) -> Plan:
+    #     """Parses the plan field."""
+    #     photo_count = plan.get("photoCountPerMonth", 0)
+    #     return Plan(
+    #         name=plan.get("name", ""),
+    #         is_active=plan.get("isActive", False),
+    #         is_free=plan.get("isFree", False),
+    #         photo_count_per_month="Unlimited" if photo_count == 0 else photo_count,
+    #     )
 
     @staticmethod
     def _parse_transmit_time(transmit_time: Optional[Dict[str, int]]) -> Optional[str]:

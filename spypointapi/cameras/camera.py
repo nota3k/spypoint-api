@@ -13,27 +13,27 @@ class Coordinates:
     longitude: Degrees
 
 
-@dataclass()
-class Plan:
-    name: str
-    is_active: bool
-    is_free: bool
-    photo_count_per_month: Union[int, str]  # Updated type hint
+# @dataclass()
+# class Plan:
+#     name: str
+#     is_active: bool
+#     is_free: bool
+#     photo_count_per_month: Union[int, str]  # Updated type hint
 
 
-@dataclass()
-class Subscription:
-    payment_frequency: str = ""
-    is_free: bool = False
-    start_date_billing_cycle: Optional[datetime] = None
-    end_date_billing_cycle: Optional[datetime] = None
-    month_end_billing_cycle: Optional[datetime] = None
-    photo_count: int = 0
-    hd_photo_count: int = 0
-    photo_limit: int = 0
-    hd_photo_limit: int = 0
-    is_auto_renew: bool = False
-    plan: Optional[Plan] = None
+# @dataclass()
+# class Subscription:
+#     payment_frequency: str = ""
+#     is_free: bool = False
+#     start_date_billing_cycle: Optional[datetime] = None
+#     end_date_billing_cycle: Optional[datetime] = None
+#     month_end_billing_cycle: Optional[datetime] = None
+#     photo_count: int = 0
+#     hd_photo_count: int = 0
+#     photo_limit: int = 0
+#     hd_photo_limit: int = 0
+#     is_auto_renew: bool = False
+#     plan: Optional[Plan] = None
 
 @dataclass
 class Camera:
@@ -55,7 +55,7 @@ class Camera:
     notifications: Optional[List[str]]
     owner: Optional[str]
     coordinates: Optional[Coordinates]  # Changed from Dict[str, float]
-    subscriptions: Optional[List[Subscription]]  # Updated to ensure type safety
+    # subscriptions: Optional[List[Subscription]]  # Updated to ensure type safety
     capture_mode: Optional[str]
     motion_delay: Optional[str]
     # delay: Optional[int]
@@ -94,7 +94,7 @@ class Camera:
             f"memory_size={self.memory_size}",
             f"capture_mode={self.capture_mode}",
             f"motion_delay={self.motion_delay}",
-            f"delay={self.delay}",
+            # f"delay={self.delay}",
             f"multi_shot={self.multi_shot}",
             f"operation_mode={self.operation_mode}",
             f"quality={self.quality}",
@@ -104,7 +104,7 @@ class Camera:
             f"transmit_auto={self.transmit_auto}",
             f"transmit_freq={self.transmit_freq}",
             f"transmit_time={self.transmit_time}",
-            f"subscriptions={self.subscriptions}",
+            # f"subscriptions={self.subscriptions}",
             f"notifications={self.notifications}",
             f"online={self.is_online}",
             f"owner={self.owner}",
