@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 
 from spypointapi import Camera
-from spypointapi.cameras.camera import Coordinates, Plan, Subscription
+from spypointapi.cameras.camera import Coordinates, Plan, Subscription, Sensibility
 
 
 class CameraApiResponse:
@@ -38,7 +38,7 @@ class CameraApiResponse:
             notifications=cls.notifications_from_json(status.get("notifications")),
             owner=cls.owner_from_json(data),
             coordinates=cls.coordinates_from_json(status.get("coordinates")),
-            subscriptions=cls.subscriptions_from_json(data.get("subscriptions", [])),
+            subscriptions=cls.subscriptions_from_json(data.get("subscriptions", [])),  # Updated
             capture_mode=cls._parse_config_field(config, "captureMode"),
             motion_delay=cls._parse_config_field(config, "motionDelay"),
             multi_shot=cls._parse_config_field(config, "multiShot"),
@@ -49,7 +49,7 @@ class CameraApiResponse:
             time_lapse=cls._parse_config_field(config, "timeLapse"),
             transmit_auto=cls._parse_config_field(config, "transmitAuto"),
             transmit_freq=cls._parse_config_field(config, "transmitFreq"),
-            transmit_time=cls._parse_config_field(config, "transmitTime"),
+            transmit_time=cls._parse_transmit_time(config.get("transmitTime")),  # Updated
         )
 
     @staticmethod
@@ -169,3 +169,24 @@ class CameraApiResponse:
             is_free=plan.get("isFree", False),
             photo_count_per_month=plan.get("photoCountPerMonth", 0),
         )
+
+    @classmethod
+    def sensibility_from_json(cls, sensibility: Optional[Dict[str, Any]]) -> Optional[Sensibility]:
+        """Parses the sensibility field."""
+        if not sensibility:
+            return None
+        return Sensibility(
+            high=sensibility.get("high"),
+            medium=sensibility.get("medium"),
+            low=sensibility.get("low"),
+            level=sensibility.get("level", "Unknown"),  # Default to "Unknown" if level is missing
+        )
+
+    @staticmethod
+    def _parse_transmit_time(transmit_time: Optional[Dict[str, int]]) -> Optional[str]:
+        """Parses the transmit_time field and formats it as military time (e.g., '18:30')."""
+        if not transmit_time:
+            return None
+        hour = transmit_time.get("hour", 0)
+        minute = transmit_time.get("minute", 0)
+        return f"{hour:02}:{minute:02}"  # Formats as 'HH:MM'

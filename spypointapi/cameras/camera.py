@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import TypeAlias, List, Dict, Any, Optional
+from typing import TypeAlias, List, Dict, Any, Optional, TypedDict
 
 Percentage: TypeAlias = float
 Celsius: TypeAlias = int
@@ -36,6 +36,12 @@ class Subscription:
     plan: Plan | None = None
 
 
+class Sensibility(TypedDict, total=False):
+    high: int
+    medium: int
+    low: int
+    level: str  # e.g., "low", "medium", "high"
+
 @dataclass
 class Camera:
     id: str
@@ -45,8 +51,8 @@ class Camera:
     camera_firmware: str
     last_update_time: Optional[datetime]
     activation_date: Optional[datetime]
-    creation_date: Optional[datetime]  # New field
-    install_date: Optional[datetime]  # New field
+    creation_date: Optional[datetime]  
+    install_date: Optional[datetime]  
     signal: Optional[float]
     temperature: Optional[Dict[str, Any]]  # Supports {"value": int, "unit": str}
     battery: Optional[int]
@@ -56,18 +62,18 @@ class Camera:
     notifications: Optional[List[str]]
     owner: Optional[str]
     coordinates: Optional[Dict[str, float]]  # Supports {"latitude": float, "longitude": float}
-    subscriptions: Optional[List[Any]]  # List of Subscription objects
+    subscriptions: Optional[List[Subscription]]  # Updated to ensure type safety
     capture_mode: Optional[str]
     motion_delay: Optional[int]
     multi_shot: Optional[int]
     operation_mode: Optional[str]
     quality: Optional[str]
-    sensibility: Optional[Dict[str, Any]]  # Supports {"high": int, "medium": int, "low": int}
+    sensibility: Optional[Sensibility]
     time_format: Optional[int]
     time_lapse: Optional[int]
     transmit_auto: Optional[bool]
     transmit_freq: Optional[int]
-    transmit_time: Optional[Dict[str, int]]  # Supports {"hour": int, "minute": int}
+    transmit_time: Optional[Dict[str, int]]
 
     @property
     def is_online(self) -> bool:
