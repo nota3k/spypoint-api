@@ -64,7 +64,8 @@ class Camera:
     coordinates: Optional[Dict[str, float]]  # Supports {"latitude": float, "longitude": float}
     subscriptions: Optional[List[Subscription]]  # Updated to ensure type safety
     capture_mode: Optional[str]
-    motion_delay: Optional[int]
+    motion_delay: Optional[str]
+    delay: Optional[int]
     multi_shot: Optional[int]
     operation_mode: Optional[str]
     quality: Optional[str]
@@ -100,6 +101,7 @@ class Camera:
             f"memory_size={self.memory_size}",
             f"capture_mode={self.capture_mode}",
             f"motion_delay={self.motion_delay}",
+            f"delay={self.delay}",
             f"multi_shot={self.multi_shot}",
             f"operation_mode={self.operation_mode}",
             f"quality={self.quality}",

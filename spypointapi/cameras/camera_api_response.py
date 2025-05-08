@@ -40,6 +40,7 @@ class CameraApiResponse:
             coordinates=cls.coordinates_from_json(status.get("coordinates")),
             subscriptions=cls.subscriptions_from_json(data.get("subscriptions", [])),  # Updated
             capture_mode=cls._parse_config_field(config, "captureMode"),
+            delay=cls._parse_config_field(config, "delay"),
             motion_delay=cls._parse_config_field(config, "motionDelay"),
             multi_shot=cls._parse_config_field(config, "multiShot"),
             operation_mode=cls._parse_config_field(config, "operationMode"),
