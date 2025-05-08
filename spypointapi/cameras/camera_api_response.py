@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Union
 
 from spypointapi import Camera
 from spypointapi.cameras.camera import Coordinates, Plan, Subscription, Sensibility
@@ -81,20 +81,25 @@ class CameraApiResponse:
         """Parses the signal strength from the status dictionary."""
         return status.get("signal", {}).get("processed", {}).get("percentage")
 
-    @classmethod
-    def temperature_from_json(cls, temperature: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-        """
-        Parses the temperature field and supports both Fahrenheit (F) and Celsius (C).
+@classmethod
+def temperature_from_json(cls, temp_input: Optional[Union[Dict[str, Any], int, float]]) -> Optional[Dict[str, Any]]:
+    if temp_input is None:
+        return None
 
-        :param temperature: A dictionary containing temperature data.
-        :return: A dictionary with the temperature value and its unit, or None if not available.
-        """
-        if not temperature:
-            return None
+    if isinstance(temp_input, dict):
         return {
-            "value": temperature.get("value"),
-            "unit": temperature.get("unit", "C")  # Default to Celsius if the unit is missing
+            "value": temp_input.get("value"),
+            # Consider defaulting to "F" if that's more common for Spypoint or if missing unit implies Fahrenheit
+            "unit": temp_input.get("unit", "F")
         }
+    elif isinstance(temp_input, (int, float)):
+        # If API sends a raw number, you MUST know or assume its unit.
+        # Example: Assuming raw numbers from Spypoint are always Fahrenheit
+        # print(f"API_PARSER_INFO: Raw temperature value {temp_input} received. Assuming Fahrenheit.") # Or use logging
+        return {"value": temp_input, "unit": "F"}
+    
+    # print(f"API_PARSER_ERROR: Unexpected type for temperature data: {type(temp_input)}. Data: {temp_input}") # Or use logging
+    return None
 
     @classmethod
     def battery_from_json(cls, batteries: Optional[List[int]]) -> Optional[int]:
