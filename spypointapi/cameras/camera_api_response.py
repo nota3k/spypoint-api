@@ -26,9 +26,9 @@ class CameraApiResponse:
             modem_firmware=cls._parse_status_field(status, "modemFirmware", default=""),
             camera_firmware=cls._parse_status_field(status, "version", default=""),
             last_update_time=cls._parse_datetime(cls._parse_status_field(status, "lastUpdate")),
-            activation_date=cls._parse_datetime(cls._parse_status_field(status, "activationDate")),
-            creation_date=cls._parse_datetime(cls._parse_status_field(status, "creationDate")),  
-            install_date=cls._parse_datetime(cls._parse_status_field(status, "installDate")), 
+            activation_date_str = data.get("activationDate"), # Get from top-level data
+            creation_date_str = data.get("creationDate"),   # Get from top-level data
+            install_date_str = cls._parse_status_field(status, "installDate"),
             signal=cls._parse_signal(status),
             temperature=cls.temperature_from_json(status.get("temperature")),
             battery=cls.battery_from_json(status.get("batteries")),
@@ -69,11 +69,14 @@ class CameraApiResponse:
         if not value:
             return None
         try:
-            # Parse the datetime and set it to UTC
-            return datetime.fromisoformat(value[:-1]).replace(tzinfo=timezone.utc)
-        except ValueError:
-            # Log the error or handle it gracefully
-            print(f"Invalid ISO 8601 datetime string: {value}")
+            # Handles "Z" suffix by stripping it before parsing
+            # and then making it timezone-aware (UTC)
+            if value.endswith("Z"):
+                return datetime.fromisoformat(value[:-1]).replace(tzinfo=timezone.utc)
+            return datetime.fromisoformat(value).replace(tzinfo=timezone.utc) # Assuming UTC if no Z
+        except (ValueError, TypeError):
+            # Consider logging this error if it's important to know about malformed dates
+            # print(f"Invalid ISO 8601 datetime string: {value}") 
             return None
 
     @staticmethod
