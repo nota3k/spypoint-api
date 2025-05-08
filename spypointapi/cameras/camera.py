@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import TypeAlias, List, Dict, Any, Optional, TypedDict
+from typing import TypeAlias, List, Dict, Any, Optional, TypedDict, Union
 
 Percentage: TypeAlias = float
 Celsius: TypeAlias = int
@@ -18,7 +18,7 @@ class Plan:
     name: str
     is_active: bool
     is_free: bool
-    photo_count_per_month: int
+    photo_count_per_month: Union[int, str]  # Updated type hint
 
 
 @dataclass()

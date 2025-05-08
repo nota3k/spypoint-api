@@ -38,7 +38,7 @@ class CameraApiResponse:
             notifications=cls.notifications_from_json(status.get("notifications")),
             owner=cls.owner_from_json(data),
             coordinates=cls.coordinates_from_json(status.get("coordinates")),
-            subscriptions=cls.subscriptions_from_json(data.get("subscriptions", [])),  # Updated
+            subscriptions=cls.subscriptions_from_json(data.get("subscriptions", [])),  
             capture_mode=cls._parse_config_field(config, "captureMode"),
             delay=cls._parse_config_field(config, "delay"),
             motion_delay=cls._parse_config_field(config, "motionDelay"),
@@ -50,7 +50,7 @@ class CameraApiResponse:
             time_lapse=cls._parse_config_field(config, "timeLapse"),
             transmit_auto=cls._parse_config_field(config, "transmitAuto"),
             transmit_freq=cls._parse_config_field(config, "transmitFreq"),
-            transmit_time=cls._parse_transmit_time(config.get("transmitTime")),  # Updated
+            transmit_time=cls._parse_transmit_time(config.get("transmitTime")),  
         )
 
     @staticmethod
@@ -146,17 +146,16 @@ class CameraApiResponse:
         """Parses the subscriptions field."""
         return [
             Subscription(
+                photo_count=sub.get("photoCount", 0),
+                photo_limit=sub.get("photoLimit", 0),
+                plan=cls.plan_from_json(sub.get("plan", {})) if sub.get("plan") else None,
+                is_auto_renew=sub.get("isAutoRenew", False),
                 payment_frequency=sub.get("paymentFrequency", ""),
-                is_free=sub.get("isFree", False),
                 start_date_billing_cycle=cls._parse_datetime(sub.get("startDateBillingCycle")),
                 end_date_billing_cycle=cls._parse_datetime(sub.get("endDateBillingCycle")),
                 month_end_billing_cycle=cls._parse_datetime(sub.get("monthEndBillingCycle")),
-                photo_count=sub.get("photoCount", 0),
-                hd_photo_count=sub.get("hdPhotoCount", 0),
-                photo_limit=sub.get("photoLimit", 0),
                 hd_photo_limit=sub.get("hdPhotoLimit", 0),
-                is_auto_renew=sub.get("isAutoRenew", False),
-                plan=cls.plan_from_json(sub.get("plan", {})) if sub.get("plan") else None,
+                hd_photo_count=sub.get("hdPhotoCount", 0),
             )
             for sub in subscriptions
         ]
@@ -164,11 +163,12 @@ class CameraApiResponse:
     @classmethod
     def plan_from_json(cls, plan: Dict[str, Any]) -> Plan:
         """Parses the plan field."""
+        photo_count = plan.get("photoCountPerMonth", 0)
         return Plan(
             name=plan.get("name", ""),
             is_active=plan.get("isActive", False),
             is_free=plan.get("isFree", False),
-            photo_count_per_month=plan.get("photoCountPerMonth", 0),
+            photo_count_per_month="Unlimited" if photo_count == 0 else photo_count,
         )
 
     @classmethod
