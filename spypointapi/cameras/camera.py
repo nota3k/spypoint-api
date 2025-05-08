@@ -73,7 +73,7 @@ class Camera:
     time_lapse: Optional[int]
     transmit_auto: Optional[bool]
     transmit_freq: Optional[int]
-    transmit_time: Optional[Dict[str, int]]
+    transmit_time: Optional[str]
 
     @property
     def is_online(self) -> bool:
