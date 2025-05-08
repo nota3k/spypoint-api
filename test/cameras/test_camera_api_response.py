@@ -105,7 +105,7 @@ class TestCameraApiResponse(unittest.TestCase):
     def test_parses_owner_field(self):
         camera = CameraApiResponse.camera_from_json(
             {
-                "ownerFirstName": "Philippe ",
+                "ownerName": "Philippe ",
                 "id": "id",
                 "config": {
                     "name": "name",

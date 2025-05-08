@@ -145,10 +145,10 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(camera.time_lapse, 3600)
                 self.assertTrue(camera.transmit_auto)
                 self.assertEqual(camera.transmit_freq, 6)
-                self.assertEqual(camera.transmit_time, {"hour": 6, "minute": 30})
-                self.assertEqual(camera.temperature, {"value": 51, "unit": "C"})  # Updated assertion
-                self.assertEqual(camera.creation_date, datetime(2023, 1, 1, 12, 0, 0, tzinfo=timezone.utc))  # Add tzinfo
-                self.assertEqual(camera.install_date, datetime(2023, 1, 2, 12, 0, 0, tzinfo=timezone.utc))  # Add tzinfo
+                self.assertEqual(camera.transmit_time, '06:30') # Changed from dict to string
+                self.assertEqual(camera.temperature, {"value": 51, "unit": "C"})
+                self.assertEqual(camera.creation_date, datetime(2023, 1, 1, 12, 0, 0, tzinfo=timezone.utc))
+                self.assertEqual(camera.install_date, datetime(2023, 1, 2, 12, 0, 0, tzinfo=timezone.utc))
 
     async def test_get_shared_cameras(self):
         with SpypointServerForTest() as server:

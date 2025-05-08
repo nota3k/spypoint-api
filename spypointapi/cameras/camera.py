@@ -58,7 +58,7 @@ class Camera:
     subscriptions: Optional[List[Subscription]]  # Updated to ensure type safety
     capture_mode: Optional[str]
     motion_delay: Optional[str]
-    delay: Optional[int]
+    # delay: Optional[int]
     multi_shot: Optional[int]
     operation_mode: Optional[str]
     quality: Optional[str]

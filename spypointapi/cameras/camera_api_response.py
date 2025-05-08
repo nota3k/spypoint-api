@@ -26,9 +26,9 @@ class CameraApiResponse:
             modem_firmware=cls._parse_status_field(status, "modemFirmware", default=""),
             camera_firmware=cls._parse_status_field(status, "version", default=""),
             last_update_time=cls._parse_datetime(cls._parse_status_field(status, "lastUpdate")),
-            activation_date=data.get("activationDate"), # Get from top-level data
-            creation_date=data.get("creationDate"),   # Get from top-level data
-            install_date=cls._parse_status_field(status, "installDate"),
+            activation_date=cls._parse_datetime(data.get("activationDate")), # Get from top-level data & parse
+            creation_date=cls._parse_datetime(data.get("creationDate")),   # Get from top-level data & parse
+            install_date=cls._parse_datetime(data.get("installDate")), # Get from top-level data & parse
             signal=cls._parse_signal(status),
             temperature=cls.temperature_from_json(status.get("temperature")),
             battery=cls.battery_from_json(status.get("batteries")),
@@ -40,7 +40,7 @@ class CameraApiResponse:
             coordinates=cls.coordinates_from_json(status.get("coordinates")),
             subscriptions=cls.subscriptions_from_json(data.get("subscriptions", [])),  
             capture_mode=cls._parse_config_field(config, "captureMode"),
-            delay=cls._parse_config_field(config, "delay"),
+            # delay=cls._parse_config_field(config, "delay"),
             motion_delay=cls._parse_config_field(config, "motionDelay"),
             multi_shot=cls._parse_config_field(config, "multiShot"),
             operation_mode=cls._parse_config_field(config, "operationMode"),
@@ -158,8 +158,8 @@ class CameraApiResponse:
                 # Photo counts and limits
                 photo_count=sub.get("photoCount", 0),
                 photo_limit=sub.get("photoLimit", 0),
-                # hd_photo_count=sub.get("hdPhotoCount", 0),
-                # hd_photo_limit=sub.get("hdPhotoLimit", 0),
+                hd_photo_count=sub.get("hdPhotoCount", 0),
+                hd_photo_limit=sub.get("hdPhotoLimit", 0),
                 # Billing cycle dates
                 start_date_billing_cycle=cls._parse_datetime(sub.get("startDateBillingCycle")),
                 end_date_billing_cycle=cls._parse_datetime(sub.get("endDateBillingCycle")),
@@ -167,6 +167,7 @@ class CameraApiResponse:
                 # Payment and renewal
                 payment_frequency=sub.get("paymentFrequency", ""),
                 is_auto_renew=sub.get("isAutoRenew", False),
+                is_free=sub.get("isFree", False),
             )
             result.append(subscription_item)
         return result
