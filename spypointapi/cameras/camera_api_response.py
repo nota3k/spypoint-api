@@ -176,9 +176,6 @@ class CameraApiResponse:
         if not sensibility:
             return None
         return Sensibility(
-            high=sensibility.get("high"),
-            medium=sensibility.get("medium"),
-            low=sensibility.get("low"),
             level=sensibility.get("level", "Unknown"),  # Default to "Unknown" if level is missing
         )
 

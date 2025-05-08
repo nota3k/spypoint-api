@@ -37,9 +37,9 @@ class Subscription:
 
 
 class Sensibility(TypedDict, total=False):
-    high: int
-    medium: int
-    low: int
+    # high: int
+    # medium: int
+    # low: int
     level: str  # e.g., "low", "medium", "high"
 
 @dataclass
