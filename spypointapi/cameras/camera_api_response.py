@@ -85,23 +85,23 @@ class CameraApiResponse:
         return status.get("signal", {}).get("processed", {}).get("percentage")
 
 @classmethod
-def temperature_from_json(cls, temp_input: Optional[Union[Dict[str, Any], int, float]]) -> Optional[Dict[str, Any]]:
-    if temp_input is None:
+def temperature_from_json(cls, temperature: Optional[Union[Dict[str, Any], int, float]]) -> Optional[Dict[str, Any]]:
+    if temperature is None:
         return None
 
-    if isinstance(temp_input, dict):
+    if isinstance(temperature, dict):
         return {
-            "value": temp_input.get("value"),
+            "value": temperature.get("value"),
             # Consider defaulting to "F" if that's more common for Spypoint or if missing unit implies Fahrenheit
-            "unit": temp_input.get("unit", "F")
+            "unit": temperature.get("unit", "F")
         }
-    elif isinstance(temp_input, (int, float)):
+    elif isinstance(temperature, (int, float)):
         # If API sends a raw number, you MUST know or assume its unit.
         # Example: Assuming raw numbers from Spypoint are always Fahrenheit
-        # print(f"API_PARSER_INFO: Raw temperature value {temp_input} received. Assuming Fahrenheit.") # Or use logging
-        return {"value": temp_input, "unit": "F"}
-    
-    # print(f"API_PARSER_ERROR: Unexpected type for temperature data: {type(temp_input)}. Data: {temp_input}") # Or use logging
+        # print(f"API_PARSER_INFO: Raw temperature value {temperature} received. Assuming Fahrenheit.") # Or use logging
+        return {"value": temperature, "unit": "F"}
+
+    # print(f"API_PARSER_ERROR: Unexpected type for temperature data: {type(temperature)}. Data: {temperature}") # Or use logging
     return None
 
     @classmethod
