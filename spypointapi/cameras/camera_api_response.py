@@ -176,7 +176,7 @@ class CameraApiResponse:
     #             month_end_billing_cycle=cls._parse_datetime(sub.get("monthEndBillingCycle")),
     #             # Payment and renewal
     #             payment_frequency=sub.get("paymentFrequency", ""),
-    #             is_auto_renew=sub.get("isAutoRenew", False),
+    #             is_auto_renew=sub.gSubscriptionet("isAutoRenew", False),
     #             is_free=sub.get("isFree", False),
     #         )
     #         result.append(subscription_item)
