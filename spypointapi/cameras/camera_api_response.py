@@ -17,7 +17,7 @@ class CameraApiResponse:
     def camera_from_json(cls, data: Dict[str, Any]) -> Camera:
         """Parses a single camera from JSON."""
         config = data.get("config", {})
-        status = data.get("status", {})
+        status = data.get("status", {}) # Ensure status is correctly retrieved
 
         return Camera(
             id=data["id"],
@@ -26,11 +26,11 @@ class CameraApiResponse:
             modem_firmware=cls._parse_status_field(status, "modemFirmware", default=""),
             camera_firmware=cls._parse_status_field(status, "version", default=""),
             last_update_time=cls._parse_datetime(cls._parse_status_field(status, "lastUpdate")),
-            activation_date=cls._parse_datetime(data.get("activationDate")), # Get from top-level data & parse
-            creation_date=cls._parse_datetime(data.get("creationDate")),   # Get from top-level data & parse
-            install_date=cls._parse_datetime(data.get("installDate")), # Get from top-level data & parse
+            activation_date=cls._parse_datetime(data.get("activationDate")), 
+            creation_date=cls._parse_datetime(data.get("creationDate")),   
+            install_date=cls._parse_datetime(cls._parse_status_field(status, "installDate")), # This is the critical line
             signal=cls._parse_signal(status),
-            temperature=cls.temperature_from_json(status.get("temperature")),
+            temperature=cls.temperature_from_json(status.get("temperature"), config.get("temperatureUnit")), # Pass config for unit
             battery=cls.battery_from_json(status.get("batteries")),
             battery_type=cls._parse_status_field(status, "batteryType"),
             memory=cls.memory_from_json(status.get("memory")),
@@ -85,18 +85,19 @@ class CameraApiResponse:
         return status.get("signal", {}).get("processed", {}).get("percentage")
 
     @classmethod
-    def temperature_from_json(cls, temperature: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    def temperature_from_json(cls, temperature_data: Optional[Dict[str, Any]], config_unit: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """
-        Parses the temperature field and supports both Fahrenheit (F) and Celsius (C).
-
-        :param temperature: A dictionary containing temperature data.
-        :return: A dictionary with the temperature value and its unit, or None if not available.
+        Parses the temperature field.
+        Uses unit from config if available, then from temperature_data, then defaults to 'C'.
         """
-        if not temperature:
+        if not temperature_data or temperature_data.get("value") is None: # Check if value itself is None
             return None
+        
+        unit = config_unit or temperature_data.get("unit") or "C" # Prioritize config_unit
+
         return {
-            "value": temperature.get("value"),
-            "unit": temperature.get("unit", "C")  # Default to Celsius if the unit is missing
+            "value": temperature_data.get("value"),
+            "unit": unit 
         }
 
     @classmethod
@@ -128,7 +129,7 @@ class CameraApiResponse:
     @classmethod
     def owner_from_json(cls, data: Dict[str, Any]) -> Optional[str]:
         """Parses the owner field."""
-        owner = data.get("ownerName")
+        owner = data.get("ownerFirstName") # Changed from ownerName to ownerFirstName
         return owner.strip() if owner else None
 
     @classmethod

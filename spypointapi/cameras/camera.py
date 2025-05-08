@@ -54,7 +54,7 @@ class Camera:
     memory_size: Optional[int]
     notifications: Optional[List[str]]
     owner: Optional[str]
-    coordinates: Optional[Dict[str, float]]  # Supports {"latitude": float, "longitude": float}
+    coordinates: Optional[Coordinates]  # Changed from Dict[str, float]
     subscriptions: Optional[List[Subscription]]  # Updated to ensure type safety
     capture_mode: Optional[str]
     motion_delay: Optional[str]
@@ -62,7 +62,7 @@ class Camera:
     multi_shot: Optional[int]
     operation_mode: Optional[str]
     quality: Optional[str]
-    sensibility: Optional[str]
+    sensibility: Optional[Dict[str, Any]] # Changed from Optional[str]
     time_format: Optional[int]
     time_lapse: Optional[int]
     transmit_auto: Optional[bool]

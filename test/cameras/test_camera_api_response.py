@@ -13,12 +13,16 @@ class TestCameraApiResponse(unittest.TestCase):
             {
                 "id": "id",
                 "creationDate": "2023-01-01T12:00:00.000Z",
-                "installDate": "2023-01-02T12:00:00.000Z",
-                "config": {"name": "name"},
+                # "installDate": "2023-01-02T12:00:00.000Z", # Moved to status
+                "config": {
+                    "name": "name",
+                    "temperatureUnit": "C" # Added temperatureUnit
+                    },
                 "status": {
                     "model": "model",
                     "lastUpdate": "2024-10-30T02:03:48.716Z",
-                    "temperature": {"value": 20, "unit": "C"},
+                    "installDate": "2023-01-02T12:00:00.000Z", # Moved here
+                    "temperature": {"value": 20}, # Unit will be taken from config
                 },
             }
         )
@@ -105,7 +109,7 @@ class TestCameraApiResponse(unittest.TestCase):
     def test_parses_owner_field(self):
         camera = CameraApiResponse.camera_from_json(
             {
-                "ownerName": "Philippe ",
+                "ownerFirstName": "Philippe ", # Changed from ownerName
                 "id": "id",
                 "config": {
                     "name": "name",
@@ -174,9 +178,12 @@ class TestCameraApiResponse(unittest.TestCase):
         camera = CameraApiResponse.camera_from_json(
             {
                 "id": "id",
-                "config": {"name": "name"},
+                "config": {
+                    "name": "name",
+                    "temperatureUnit": "F" # Define unit in config
+                    },
                 "status": {
-                    "temperature": {"value": 68, "unit": "F"}
+                    "temperature": {"value": 68} # Value only in status.temperature
                 },
             }
         )
