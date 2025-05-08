@@ -26,9 +26,9 @@ class CameraApiResponse:
             modem_firmware=cls._parse_status_field(status, "modemFirmware", default=""),
             camera_firmware=cls._parse_status_field(status, "version", default=""),
             last_update_time=cls._parse_datetime(cls._parse_status_field(status, "lastUpdate")),
-            activation_date_str = data.get("activationDate"), # Get from top-level data
-            creation_date_str = data.get("creationDate"),   # Get from top-level data
-            install_date_str = cls._parse_status_field(status, "installDate"),
+            activation_date=data.get("activationDate"), # Get from top-level data
+            creation_date=data.get("creationDate"),   # Get from top-level data
+            install_date=cls._parse_status_field(status, "installDate"),
             signal=cls._parse_signal(status),
             temperature=cls.temperature_from_json(status.get("temperature")),
             battery=cls.battery_from_json(status.get("batteries")),
