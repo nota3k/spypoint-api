@@ -23,17 +23,17 @@ class Plan:
 
 @dataclass()
 class Subscription:
-    payment_frequency: str
-    is_free: bool
-    start_date_billing_cycle: datetime
-    end_date_billing_cycle: datetime
-    month_end_billing_cycle: datetime
-    photo_count: int
-    hd_photo_count: int
-    photo_limit: int
-    hd_photo_limit: int
-    is_auto_renew: bool
-    plan: Plan | None = None
+    payment_frequency: str = ""
+    is_free: bool = False
+    start_date_billing_cycle: Optional[datetime] = None
+    end_date_billing_cycle: Optional[datetime] = None
+    month_end_billing_cycle: Optional[datetime] = None
+    photo_count: int = 0
+    hd_photo_count: int = 0
+    photo_limit: int = 0
+    hd_photo_limit: int = 0
+    is_auto_renew: bool = False
+    plan: Optional[Plan] = None
 
 @dataclass
 class Camera:

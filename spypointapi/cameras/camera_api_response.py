@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional, Union
 
 from spypointapi import Camera
-from spypointapi.cameras.camera import Coordinates, Plan, Subscription
+from spypointapi.cameras.camera import Coordinates, Plan, Subscription # Changed: Import Subscription from camera.py
 
 
 class CameraApiResponse:
@@ -28,16 +28,16 @@ class CameraApiResponse:
             last_update_time=cls._parse_datetime(cls._parse_status_field(status, "lastUpdate")),
             activation_date=cls._parse_datetime(data.get("activationDate")), 
             creation_date=cls._parse_datetime(data.get("creationDate")),   
-            install_date=cls._parse_datetime(cls._parse_status_field(status, "installDate")), # This is the critical line
+            install_date=cls._parse_datetime(cls._parse_status_field(status, "installDate")), 
             signal=cls._parse_signal(status),
-            temperature=cls.temperature_from_json(status.get("temperature"), config.get("temperatureUnit")), # Pass config for unit
+            temperature=cls.temperature_from_json(status.get("temperature"), config.get("temperatureUnit")), 
             battery=cls.battery_from_json(status.get("batteries")),
             battery_type=cls._parse_status_field(status, "batteryType"),
             memory=cls.memory_from_json(status.get("memory")),
             memory_size=cls.memory_size_from_json(status.get("memory")),
             notifications=cls.notifications_from_json(status.get("notifications")),
             owner=cls.owner_from_json(data),
-            coordinates=cls.coordinates_from_json(status.get("coordinates")),
+            coordinates=cls.coordinates_from_json(data.get("coordinates")), # Changed: Get coordinates from root data
             subscriptions=cls.subscriptions_from_json(data.get("subscriptions", [])),  
             capture_mode=cls._parse_config_field(config, "captureMode"),
             # delay=cls._parse_config_field(config, "delay"),
@@ -133,20 +133,30 @@ class CameraApiResponse:
         return owner.strip() if owner else None
 
     @classmethod
-    def coordinates_from_json(cls, coordinates: Optional[List[Dict[str, Any]]]) -> Optional[Coordinates]:
-        """Parses the coordinates field."""
-        if not coordinates or len(coordinates) < 1:
+    def coordinates_from_json(cls, coordinates_data: Optional[Dict[str, Any]]) -> Optional[Coordinates]: # Changed input type
+        """Parses the coordinates field, expecting a single GeoJSON-like Point object."""
+        if not coordinates_data:
             return None
-        position = coordinates[0].get("position", {})
-        if position.get("type") != "Point":
+        
+        position = coordinates_data.get("position", {})
+        if not isinstance(position, dict) or position.get("type") != "Point":
             return None
+            
         lat_lon = position.get("coordinates", [])
-        if len(lat_lon) != 2:
+        if not isinstance(lat_lon, list) or len(lat_lon) != 2:
             return None
-        return Coordinates(latitude=lat_lon[1], longitude=lat_lon[0])
+            
+        # GeoJSON format is [longitude, latitude]
+        try:
+            longitude = float(lat_lon[0])
+            latitude = float(lat_lon[1])
+        except (ValueError, TypeError):
+            return None # Invalid coordinate values
+
+        return Coordinates(latitude=latitude, longitude=longitude)
 
     @classmethod
-    def subscriptions_from_json(cls, subscriptions: List[Dict[str, Any]]) -> List[Subscription]:
+    def subscriptions_from_json(cls, subscriptions: List[Dict[str, Any]]) -> List[Subscription]: # Changed: Corrected type hint
         """Parses the subscriptions field."""
         result = []
         for sub in subscriptions:
