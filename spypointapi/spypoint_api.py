@@ -1,7 +1,7 @@
 import asyncio
 from datetime import datetime, timedelta
 from http import HTTPStatus
-from typing import List, Dict
+from typing import List, Dict, Any
 import jwt
 from aiohttp import ClientSession, ClientResponse, ClientResponseError
 
@@ -89,21 +89,27 @@ class SpypointApi:
             body['id'] = camera_id
             return CameraApiResponse.camera_from_json(body)
 
+    async def _async_fetch_camera_models_data(self) -> List[Dict[str, Any]]:
+        """
+        Helper method to fetch raw camera models data from the API.
+        """
+        await self.async_authenticate()
+        async with self.session.get(f'{self.base_url}/camera/models', headers=self.headers) as response:
+            self._raise_on_get_error(response)
+            return await response.json()
+
     async def async_get_camera_model_details(self) -> List[Dict[str, str]]:
         """
         Fetches all the name and icon URLs from the /api/v3/camera/models endpoint.
 
         :return: A list of dictionaries containing name and iconUrl.
         """
-        await self.async_authenticate()
-        async with self.session.get(f'{self.base_url}/camera/models', headers=self.headers) as response:
-            self._raise_on_get_error(response)
-            body = await response.json()
-            return [
-                {"name": model.get("name", ""), "iconUrl": model.get("iconUrl", "")}
-                for model in body
-                if "name" in model and "iconUrl" in model
-            ]
+        models_data = await self._async_fetch_camera_models_data()
+        return [
+            {"name": model.get("name", ""), "iconUrl": model.get("iconUrl", "")}
+            for model in models_data
+            if "name" in model and "iconUrl" in model
+        ]
 
     async def async_get_camera_model_icons(self) -> List[str]:
         """
@@ -111,11 +117,8 @@ class SpypointApi:
 
         :return: A list of icon URLs.
         """
-        await self.async_authenticate()
-        async with self.session.get(f'{self.base_url}/camera/models', headers=self.headers) as response:
-            self._raise_on_get_error(response)
-            body = await response.json()
-            return [model.get('iconUrl', '') for model in body if 'iconUrl' in model]
+        models_data = await self._async_fetch_camera_models_data()
+        return [model.get('iconUrl', '') for model in models_data if 'iconUrl' in model]
 
     def _raise_on_get_error(self, response: ClientResponse):
         """

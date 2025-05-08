@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import TypeAlias, List, Dict, Any, Optional, TypedDict, Union
+from typing import TypeAlias, List, Dict, Any, Optional, Union
 
 Percentage: TypeAlias = float
 Celsius: TypeAlias = int
@@ -34,10 +34,6 @@ class Subscription:
     hd_photo_limit: int
     is_auto_renew: bool
     plan: Plan | None = None
-
-
-class Sensibility(TypedDict, total=False):
-    level: str  # e.g., "low", "medium", "high"
 
 @dataclass
 class Camera:
