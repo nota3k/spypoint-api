@@ -172,10 +172,6 @@ class CameraApiResponse:
                 # Payment and renewal
                 payment_frequency=sub.get("paymentFrequency", ""),
                 is_auto_renew=sub.get("isAutoRenew", False),
-                # is_free is missing from your original Subscription dataclass,
-                # but present in the API response example.
-                # If you add it to Subscription, you can parse it here:
-                # is_free=sub.get("isFree", False),
             )
             result.append(subscription_item)
         return result
@@ -190,11 +186,6 @@ class CameraApiResponse:
             is_free=plan.get("isFree", False),
             photo_count_per_month="Unlimited" if photo_count == 0 else photo_count,
         )
-
-    @classmethod
-    def sensibility_from_json(cls, sensibility: Optional[Dict[str, Any]]) -> Optional[str]:
-        """Parses and returns the sensibility level."""
-        return sensibility.get("level") if sensibility else None
 
     @staticmethod
     def _parse_transmit_time(transmit_time: Optional[Dict[str, int]]) -> Optional[str]:

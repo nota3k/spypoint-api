@@ -66,7 +66,7 @@ class Camera:
     multi_shot: Optional[int]
     operation_mode: Optional[str]
     quality: Optional[str]
-    sensibility: Optional[Sensibility]
+    sensibility: Optional[str]
     time_format: Optional[int]
     time_lapse: Optional[int]
     transmit_auto: Optional[bool]
