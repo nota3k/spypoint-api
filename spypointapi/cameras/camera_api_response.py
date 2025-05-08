@@ -84,25 +84,25 @@ class CameraApiResponse:
         """Parses the signal strength from the status dictionary."""
         return status.get("signal", {}).get("processed", {}).get("percentage")
 
-@classmethod
-def temperature_from_json(cls, temperature: Optional[Union[Dict[str, Any], int, float]]) -> Optional[Dict[str, Any]]:
-    if temperature is None:
+    @classmethod
+    def temperature_from_json(cls, temperature: Optional[Union[Dict[str, Any], int, float]]) -> Optional[Dict[str, Any]]:
+        if temperature is None:
+            return None
+
+        if isinstance(temperature, dict):
+            return {
+                "value": temperature.get("value"),
+                # Consider defaulting to "F" if that's more common for Spypoint or if missing unit implies Fahrenheit
+                "unit": temperature.get("unit", "F")
+            }
+        elif isinstance(temperature, (int, float)):
+            # If API sends a raw number, you MUST know or assume its unit.
+            # Example: Assuming raw numbers from Spypoint are always Fahrenheit
+            # print(f"API_PARSER_INFO: Raw temperature value {temperature} received. Assuming Fahrenheit.") # Or use logging
+            return {"value": temperature, "unit": "F"}
+
+        # print(f"API_PARSER_ERROR: Unexpected type for temperature data: {type(temperature)}. Data: {temperature}") # Or use logging
         return None
-
-    if isinstance(temperature, dict):
-        return {
-            "value": temperature.get("value"),
-            # Consider defaulting to "F" if that's more common for Spypoint or if missing unit implies Fahrenheit
-            "unit": temperature.get("unit", "F")
-        }
-    elif isinstance(temperature, (int, float)):
-        # If API sends a raw number, you MUST know or assume its unit.
-        # Example: Assuming raw numbers from Spypoint are always Fahrenheit
-        # print(f"API_PARSER_INFO: Raw temperature value {temperature} received. Assuming Fahrenheit.") # Or use logging
-        return {"value": temperature, "unit": "F"}
-
-    # print(f"API_PARSER_ERROR: Unexpected type for temperature data: {type(temperature)}. Data: {temperature}") # Or use logging
-    return None
 
     @classmethod
     def battery_from_json(cls, batteries: Optional[List[int]]) -> Optional[int]:
@@ -192,13 +192,9 @@ def temperature_from_json(cls, temperature: Optional[Union[Dict[str, Any], int, 
         )
 
     @classmethod
-    def sensibility_from_json(cls, sensibility: Optional[Dict[str, Any]]) -> Optional[Sensibility]:
-        """Parses the sensibility field."""
-        if not sensibility:
-            return None
-        return Sensibility(
-            level=sensibility.get("level", "Unknown"),  # Default to "Unknown" if level is missing
-        )
+    def sensibility_from_json(cls, sensibility: Optional[Dict[str, Any]]) -> Optional[str]:
+        """Parses and returns the sensibility level."""
+        return sensibility.get("level") if sensibility else None
 
     @staticmethod
     def _parse_transmit_time(transmit_time: Optional[Dict[str, int]]) -> Optional[str]:
