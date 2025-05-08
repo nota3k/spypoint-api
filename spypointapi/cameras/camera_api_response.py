@@ -27,8 +27,8 @@ class CameraApiResponse:
             camera_firmware=cls._parse_status_field(status, "version", default=""),
             last_update_time=cls._parse_datetime(cls._parse_status_field(status, "lastUpdate")),
             activation_date=cls._parse_datetime(data.get("activationDate")),
-            creation_date=cls._parse_datetime(data.get("creationDate")),  # New field
-            install_date=cls._parse_datetime(data.get("installDate")),  # New field
+            creation_date=cls._parse_datetime(data.get("creationDate")),  
+            install_date=cls._parse_datetime(data.get("installDate")), 
             signal=cls._parse_signal(status),
             temperature=cls.temperature_from_json(status.get("temperature")),
             battery=cls.battery_from_json(status.get("batteries")),
@@ -124,7 +124,7 @@ class CameraApiResponse:
     @classmethod
     def owner_from_json(cls, data: Dict[str, Any]) -> Optional[str]:
         """Parses the owner field."""
-        owner = data.get("ownerFirstName")
+        owner = data.get("ownerName")
         return owner.strip() if owner else None
 
     @classmethod
