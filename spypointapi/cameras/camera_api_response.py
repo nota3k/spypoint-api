@@ -149,21 +149,33 @@ def temperature_from_json(cls, temp_input: Optional[Union[Dict[str, Any], int, f
     @classmethod
     def subscriptions_from_json(cls, subscriptions: List[Dict[str, Any]]) -> List[Subscription]:
         """Parses the subscriptions field."""
-        return [
-            Subscription(
+        result = []
+        for sub in subscriptions:
+            plan_data = sub.get("plan")
+            parsed_plan = cls.plan_from_json(plan_data) if plan_data else None
+
+            subscription_item = Subscription(
+                # Plan related
+                plan=parsed_plan,
+                # Photo counts and limits
                 photo_count=sub.get("photoCount", 0),
                 photo_limit=sub.get("photoLimit", 0),
-                plan=cls.plan_from_json(sub.get("plan", {})) if sub.get("plan") else None,
-                is_auto_renew=sub.get("isAutoRenew", False),
-                payment_frequency=sub.get("paymentFrequency", ""),
+                # hd_photo_count=sub.get("hdPhotoCount", 0),
+                # hd_photo_limit=sub.get("hdPhotoLimit", 0),
+                # Billing cycle dates
                 start_date_billing_cycle=cls._parse_datetime(sub.get("startDateBillingCycle")),
                 end_date_billing_cycle=cls._parse_datetime(sub.get("endDateBillingCycle")),
                 month_end_billing_cycle=cls._parse_datetime(sub.get("monthEndBillingCycle")),
-                hd_photo_limit=sub.get("hdPhotoLimit", 0),
-                hd_photo_count=sub.get("hdPhotoCount", 0),
+                # Payment and renewal
+                payment_frequency=sub.get("paymentFrequency", ""),
+                is_auto_renew=sub.get("isAutoRenew", False),
+                # is_free is missing from your original Subscription dataclass,
+                # but present in the API response example.
+                # If you add it to Subscription, you can parse it here:
+                # is_free=sub.get("isFree", False),
             )
-            for sub in subscriptions
-        ]
+            result.append(subscription_item)
+        return result
 
     @classmethod
     def plan_from_json(cls, plan: Dict[str, Any]) -> Plan:
