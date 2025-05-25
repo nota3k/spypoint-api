@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 
 from .. import Camera
 from .camera import Coordinates
@@ -33,7 +33,7 @@ class CameraApiResponse:
         )
 
     @classmethod
-    def temperature_from_json(cls, temperature: Optional[Dict[str, Any]]) -> Optional[int]:
+    def temperature_from_json(cls, temperature: Dict[str, Any] | None) -> int | None:
         if not temperature or None in (temperature.get('unit'), temperature.get('value')):
             return None
 
@@ -42,13 +42,13 @@ class CameraApiResponse:
         return value if unit == 'C' else int((value - 32) * 5 / 9)
 
     @classmethod
-    def battery_from_json(cls, batteries: Optional[Dict[str, Any]]) -> Optional[str]:
+    def battery_from_json(cls, batteries: Dict[str, Any] | None) -> str | None:
         if not batteries:
             return None
         return max(batteries)
 
     @classmethod
-    def memory_from_json(cls, memory: Optional[Dict[str, Any]]) -> Optional[float]:
+    def memory_from_json(cls, memory: Dict[str, Any] | None) -> float | None:
         if not memory:
             return None
         if memory.get('size', 0) == 0:
@@ -56,7 +56,7 @@ class CameraApiResponse:
         return round(memory.get('used') / memory.get('size') * 100, 2)
 
     @classmethod
-    def notifications_from_json(cls, notifications: Optional[Dict[str, Any]]) -> Optional[List[str]]:
+    def notifications_from_json(cls, notifications: Dict[str, Any] | None) -> List[str] | None:
         if notifications is None:
             return None
         return [str(notification) for notification in notifications]
@@ -69,7 +69,7 @@ class CameraApiResponse:
         return owner.strip()
 
     @classmethod
-    def coordinates_from_json(cls, coordinates: Optional[List[Any]]) -> Optional[Coordinates]:
+    def coordinates_from_json(cls, coordinates: List[Any] | None) -> Coordinates | None:
         if (coordinates is None
                 or len(coordinates) < 1
                 or coordinates[0].get('position', {}).get('type', '') != 'Point'
