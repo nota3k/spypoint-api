@@ -8,7 +8,7 @@ import jwt
 from spypointapi import SpypointApi
 from spypointapi.cameras.camera_api_response import CameraApiResponse
 from spypointapi.spypoint_api import SpypointApiInvalidCredentialsError, SpypointApiError
-from test.spypoint_server_for_test import SpypointServerForTest
+from .spypoint_server_for_test import SpypointServerForTest
 
 
 class TestSpypointApi(unittest.IsolatedAsyncioTestCase):

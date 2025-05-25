@@ -3,19 +3,11 @@ from datetime import datetime, timedelta
 from http import HTTPStatus
 from typing import List
 import jwt
-from aiohttp import ClientSession, ClientResponse, ClientResponseError
+from aiohttp import ClientSession, ClientResponse
 
-from spypointapi import Camera
-from spypointapi.cameras.camera_api_response import CameraApiResponse
-from spypointapi.shared_cameras.shared_cameras_api_response import SharedCamerasApiResponse
-
-
-class SpypointApiError(ClientResponseError):
-    pass
-
-
-class SpypointApiInvalidCredentialsError(SpypointApiError):
-    pass
+from . import Camera, SpypointApiError, SpypointApiInvalidCredentialsError
+from .cameras.camera_api_response import CameraApiResponse
+from .shared_cameras.shared_cameras_api_response import SharedCamerasApiResponse
 
 
 class SpypointApi:
@@ -44,9 +36,9 @@ class SpypointApi:
     @staticmethod
     def _raise_on_authenticate_error(response: ClientResponse):
         if response.status == HTTPStatus.UNAUTHORIZED:
-            raise SpypointApiInvalidCredentialsError(response.request_info, response.history, status=response.status, message=response.reason, headers=response.headers)
+            raise SpypointApiInvalidCredentialsError(response)
         if not response.ok:
-            raise SpypointApiError(response.request_info, response.history, status=response.status, message=response.reason, headers=response.headers)
+            raise SpypointApiError(response)
 
     async def async_get_cameras(self) -> List[Camera]:
         own_cameras = await self.async_get_own_cameras()
@@ -83,4 +75,4 @@ class SpypointApi:
             del self.headers['Authorization']
 
         if not response.ok:
-            raise SpypointApiError(response.request_info, response.history, status=response.status, message=response.reason, headers=response.headers)
+            raise SpypointApiError(response)

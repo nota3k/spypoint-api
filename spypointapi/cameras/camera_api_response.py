@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 
-from spypointapi import Camera
-from spypointapi.cameras.camera import Coordinates
+from .. import Camera
+from .camera import Coordinates
 
 
 class CameraApiResponse:

@@ -6,5 +6,6 @@ __all__ = [
     "SpypointApi",
 ]
 
-from spypointapi.cameras.camera import Camera, Coordinates
-from spypointapi.spypoint_api import SpypointApi, SpypointApiError, SpypointApiInvalidCredentialsError
+from .cameras.camera import Camera, Coordinates
+from .spypoint_api_errors import SpypointApiError, SpypointApiInvalidCredentialsError
+from .spypoint_api import SpypointApi
