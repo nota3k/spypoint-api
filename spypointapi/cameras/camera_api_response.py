@@ -34,11 +34,12 @@ class CameraApiResponse:
 
     @classmethod
     def temperature_from_json(cls, temperature: Optional[Dict[str, Any]]) -> Optional[int]:
-        if not temperature:
+        if not temperature or None in (temperature.get('unit'), temperature.get('value')):
             return None
-        if temperature['unit'] == 'C':
-            return temperature['value']
-        return int((temperature['value'] - 32) * 5 / 9)
+
+        unit = temperature['unit']
+        value = temperature['value']
+        return value if unit == 'C' else int((value - 32) * 5 / 9)
 
     @classmethod
     def battery_from_json(cls, batteries: Optional[Dict[str, Any]]) -> Optional[str]:

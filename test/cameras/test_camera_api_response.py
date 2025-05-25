@@ -84,8 +84,6 @@ class TestCameraApiResponse(unittest.TestCase):
                 },
                 "status": {
                     "model": "model",
-                    "modemFirmware": "modemFirmware",
-                    "version": "version",
                     "lastUpdate": "2024-10-30T02:03:48.716Z",
                     "memory": {
                         "used": 0,
@@ -96,6 +94,44 @@ class TestCameraApiResponse(unittest.TestCase):
         )
 
         self.assertEqual(camera.memory, None)
+
+    def test_parses_missing_temperature_unit(self):
+        camera = CameraApiResponse.camera_from_json(
+            {
+                "id": "id",
+                "config": {
+                    "name": "name",
+                },
+                "status": {
+                    "model": "model",
+                    "lastUpdate": "2024-10-30T02:03:48.716Z",
+                    "temperature": {
+                        "value": 74,
+                    },
+                }
+            }
+        )
+
+        self.assertEqual(camera.temperature, None)
+
+    def test_parses_missing_temperature_value(self):
+        camera = CameraApiResponse.camera_from_json(
+            {
+                "id": "id",
+                "config": {
+                    "name": "name",
+                },
+                "status": {
+                    "model": "model",
+                    "lastUpdate": "2024-10-30T02:03:48.716Z",
+                    "temperature": {
+                        "unit": "C",
+                    },
+                }
+            }
+        )
+
+        self.assertEqual(camera.temperature, None)
 
     def test_converts_f_temperature_to_c(self):
         camera = CameraApiResponse.camera_from_json(
