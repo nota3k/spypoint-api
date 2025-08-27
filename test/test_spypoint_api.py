@@ -175,7 +175,7 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
 
                 server.assert_called_with(
                     url='/photo/all',
-                    method='GET',
+                    method='POST',
                     headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'})
 
                 expected_media = MediaApiResponse.from_json(photos_response)

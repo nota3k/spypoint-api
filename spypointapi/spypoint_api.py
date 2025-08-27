@@ -63,7 +63,7 @@ class SpypointApi:
             return await asyncio.gather(*gets_by_id)
 
     async def async_get_media(self) -> List[Media]:
-        async with await self._get('/photo/all') as response:
+        async with await self._post('/photo/all') as response:
             body = await response.json()
             return MediaApiResponse.from_json(body)
 
@@ -77,6 +77,20 @@ class SpypointApi:
         await self.async_authenticate()
         response = await self.session.get(f'{self.base_url}{url}', headers=self.headers)
         await self._log(url, response, self.headers)
+        self._raise_on_get_error(response)
+        return response
+
+    async def _post(self, url: str, json: dict | None = None) -> ClientResponse:
+        await self.async_authenticate()
+        if json is None:
+            response = await self.session.post(
+                f'{self.base_url}{url}', headers=self.headers
+            )
+        else:
+            response = await self.session.post(
+                f'{self.base_url}{url}', headers=self.headers, json=json
+            )
+        await self._log(url, response, self.headers, json)
         self._raise_on_get_error(response)
         return response
 
