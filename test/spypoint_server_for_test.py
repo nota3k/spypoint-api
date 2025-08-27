@@ -39,6 +39,11 @@ class SpypointServerForTest:
             body = []
         self.server.get(f'{self.base_url}/shared-cameras/{id}', status=status, payload=body, repeat=repeat)
 
+    def prepare_photos_response(self, body=None, status=HTTPStatus.OK, repeat=True):
+        if body is None:
+            body = {"photos": []}
+        self.server.get(f'{self.base_url}/photo/all', status=status, payload=body, repeat=repeat)
+
     def assert_called_with(self, url, method, *args, **kwargs):
         self.server.assert_called_with(f'{self.base_url}{url}', method, *args, **kwargs)
 

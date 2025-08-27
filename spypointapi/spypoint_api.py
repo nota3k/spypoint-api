@@ -6,8 +6,9 @@ from typing import List
 import jwt
 from aiohttp import ClientSession, ClientResponse
 
-from . import Camera, SpypointApiError, SpypointApiInvalidCredentialsError
+from . import Camera, Media, SpypointApiError, SpypointApiInvalidCredentialsError
 from .cameras.camera_api_response import CameraApiResponse
+from .media.media_api_response import MediaApiResponse
 from .shared_cameras.shared_cameras_api_response import SharedCamerasApiResponse
 
 LOGGER: Logger = getLogger(__package__)
@@ -60,6 +61,11 @@ class SpypointApi:
             camera_ids = SharedCamerasApiResponse.from_json(body)
             gets_by_id = [self._async_get_shared_camera(camera_id) for camera_id in camera_ids]
             return await asyncio.gather(*gets_by_id)
+
+    async def async_get_media(self) -> List[Media]:
+        async with await self._get('/photo/all') as response:
+            body = await response.json()
+            return MediaApiResponse.from_json(body)
 
     async def _async_get_shared_camera(self, camera_id) -> Camera:
         async with await self._get(f'/shared-cameras/{camera_id}') as response:

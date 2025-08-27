@@ -7,6 +7,7 @@ import jwt
 
 from spypointapi import SpypointApi
 from spypointapi.cameras.camera_api_response import CameraApiResponse
+from spypointapi.media.media_api_response import MediaApiResponse
 from spypointapi.spypoint_api import SpypointApiInvalidCredentialsError, SpypointApiError
 from .spypoint_server_for_test import SpypointServerForTest
 
@@ -126,6 +127,59 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
                     "status": {"model": "model", "lastUpdate": "2024-10-30T02:03:48.716Z", }
                 })
                 self.assertEqual(cameras, [expected_camera])
+
+    async def test_get_media(self):
+        with SpypointServerForTest() as server:
+            token = server.prepare_login_response()
+            photos_response = {
+                "photos": [
+                    {
+                        "id": "img1",
+                        "camera": "c1",
+                        "date": "2025-01-01T00:00:00.000Z",
+                        "large": {"host": "s3.amazonaws.com", "path": "image1.jpg"},
+                        "tag": ["day"],
+                    },
+                    {
+                        "id": "vid1",
+                        "camera": "c1",
+                        "date": "2025-01-02T00:00:00.000Z",
+                        "large": {"host": "s3.amazonaws.com", "path": "vid1.jpg"},
+                        "preview": [
+                            {"host": "s3.amazonaws.com", "path": "vid1.jpg"},
+                            {"host": "s3.amazonaws.com", "path": "vid1_2.jpg"},
+                            {"host": "s3.amazonaws.com", "path": "vid1_3.jpg"},
+                        ],
+                        "tag": ["day", "hdvideo"],
+                        "hdVideo": {"host": "s3.amazonaws.com", "path": "vid1.mp4"},
+                    },
+                    {
+                        "id": "prev1",
+                        "camera": "c1",
+                        "date": "2025-01-03T00:00:00.000Z",
+                        "large": {"host": "s3.amazonaws.com", "path": "prev1.jpg"},
+                        "preview": [
+                            {"host": "s3.amazonaws.com", "path": "prev1.jpg"},
+                            {"host": "s3.amazonaws.com", "path": "prev1_2.jpg"},
+                            {"host": "s3.amazonaws.com", "path": "prev1_3.jpg"},
+                        ],
+                        "tag": ["preview"],
+                    },
+                ]
+            }
+            server.prepare_photos_response(photos_response)
+
+            async with aiohttp.ClientSession() as session:
+                api = SpypointApi(self.username, self.password, session)
+                media = await api.async_get_media()
+
+                server.assert_called_with(
+                    url='/photo/all',
+                    method='GET',
+                    headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'})
+
+                expected_media = MediaApiResponse.from_json(photos_response)
+                self.assertEqual(media, expected_media)
 
     async def test_get_cameras_authentication_error(self):
         with SpypointServerForTest() as server:
