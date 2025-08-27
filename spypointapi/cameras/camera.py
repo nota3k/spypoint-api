@@ -63,7 +63,7 @@ class Camera:
             f"last_update_time={self.last_update_time}, signal={self.signal}, "
             f"temperature={self.temperature}, battery={self.battery}, battery_type={self.battery_type}, "
             f"memory={self.memory}, notifications={self.notifications}, "
-            f"online={self.is_online}), owner={self.owner}, coordinates={self.coordinates}, "
+            f"online={self.is_online}, owner={self.owner}, coordinates={self.coordinates}, "
             f"activation_date={self.activation_date}, creation_date={self.creation_date}, "
             f"is_cellular={self.is_cellular}, capture_mode={self.capture_mode}, "
             f"delay={self.delay}, multi_shot={self.multi_shot}, quality={self.quality}, "

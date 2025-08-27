@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from datetime import datetime, timedelta
 from http import HTTPStatus
 from logging import Logger, getLogger
@@ -131,12 +132,31 @@ class SpypointApi:
     def _raise_on_get_error(self, response: ClientResponse):
         if response.status == HTTPStatus.UNAUTHORIZED:
             self.expires_at = datetime.now() - timedelta(seconds=1)
-            del self.headers['Authorization']
+            self.headers.pop('Authorization', None)
 
         if not response.ok:
             raise SpypointApiError(response)
 
     @staticmethod
     async def _log(url: str, response: ClientResponse, headers: dict, json: dict = None) -> None:
+        # Avoid overhead unless debug logging is enabled
+        if not LOGGER.isEnabledFor(logging.DEBUG):
+            return
+
+        # Redact sensitive information
+        redacted_headers = dict(headers or {})
+        if 'Authorization' in redacted_headers:
+            redacted_headers['Authorization'] = 'Bearer ****'
+
+        redacted_body = None
+        if isinstance(json, dict):
+            redacted_body = json.copy()
+            if 'password' in redacted_body:
+                redacted_body['password'] = '****'
+        else:
+            redacted_body = json
+
         LOGGER.debug(
-            f"{url} : Request[[ headers=[{headers}] body=[{json}] ]] - Response[[ status=[{response.status}] headers=[{dict(response.headers)}] body=[{await response.text()}] ]]")
+            f"{url} : Request[[ headers=[{redacted_headers}] body=[{redacted_body}] ]] - "
+            f"Response[[ status=[{response.status}] headers=[{dict(response.headers)}] body=[{await response.text()}] ]]"
+        )
