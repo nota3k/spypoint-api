@@ -7,6 +7,8 @@ import jwt
 from aiohttp import ClientSession, ClientResponse
 
 from . import Camera, Media, SpypointApiError, SpypointApiInvalidCredentialsError
+from .cameras.camera_model import CameraModel
+from .cameras.camera_models_api_response import CameraModelsApiResponse
 from .cameras.camera_api_response import CameraApiResponse
 from .media.media_api_response import MediaApiResponse
 from .shared_cameras.shared_cameras_api_response import SharedCamerasApiResponse
@@ -66,6 +68,11 @@ class SpypointApi:
         async with await self._post('/photo/all') as response:
             body = await response.json()
             return MediaApiResponse.from_json(body)
+
+    async def async_get_camera_models(self) -> List[CameraModel]:
+        async with await self._get('/camera/models') as response:
+            body = await response.json()
+            return CameraModelsApiResponse.from_json(body)
 
     async def _async_get_shared_camera(self, camera_id) -> Camera:
         async with await self._get(f'/shared-cameras/{camera_id}') as response:

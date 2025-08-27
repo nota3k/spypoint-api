@@ -7,6 +7,7 @@ import jwt
 
 from spypointapi import SpypointApi
 from spypointapi.cameras.camera_api_response import CameraApiResponse
+from spypointapi.cameras.camera_models_api_response import CameraModelsApiResponse
 from spypointapi.media.media_api_response import MediaApiResponse
 from spypointapi.spypoint_api import SpypointApiInvalidCredentialsError, SpypointApiError
 from .spypoint_server_for_test import SpypointServerForTest
@@ -194,3 +195,26 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
 
                 self.assertLess(api.expires_at, datetime.now())
                 self.assertIsNone(api.headers.get('Authorization'))
+
+    async def test_get_camera_models(self):
+        with SpypointServerForTest() as server:
+            token = server.prepare_login_response()
+
+            models_response = [
+                {"name": "CELL-LINK", "iconUrl": "https://icons/CELL-LINK.png", "variants": ["CELL-LINK-V"]},
+                {"name": "FLEX", "iconUrl": "https://icons/FLEX.png", "variants": []},
+            ]
+            server.prepare_camera_models_response(models_response)
+
+            async with aiohttp.ClientSession() as session:
+                api = SpypointApi(self.username, self.password, session)
+                models = await api.async_get_camera_models()
+
+                server.assert_called_with(
+                    url='/camera/models',
+                    method='GET',
+                    headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'}
+                )
+
+                expected_models = CameraModelsApiResponse.from_json(models_response)
+                self.assertEqual(models, expected_models)

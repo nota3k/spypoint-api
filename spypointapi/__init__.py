@@ -1,5 +1,6 @@
 __all__ = [
     "Camera",
+    "CameraModel",
     "Coordinates",
     "Media",
     "SpypointApiError",
@@ -8,6 +9,7 @@ __all__ = [
 ]
 
 from .cameras.camera import Camera, Coordinates
+from .cameras.camera_model import CameraModel
 from .media import Media
 from .spypoint_api_errors import SpypointApiError, SpypointApiInvalidCredentialsError
 from .spypoint_api import SpypointApi
