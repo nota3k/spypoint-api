@@ -182,6 +182,64 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
                 expected_media = MediaApiResponse.from_json(photos_response)
                 self.assertEqual(media, expected_media)
 
+    async def test_get_media_with_filters_and_pagination(self):
+        with SpypointServerForTest() as server:
+            token = server.prepare_login_response()
+            photos_response = {"photos": []}
+            server.prepare_photos_response(photos_response)
+
+            async with aiohttp.ClientSession() as session:
+                api = SpypointApi(self.username, self.password, session)
+
+                cameras = ["c1", "c2"]
+                before = "2025-02-01T00:00:00.000Z"
+                limit = 100
+                page = 2
+                offset = 10
+
+                media = await api.async_get_media(
+                    camera_ids=cameras, before=before, limit=limit, page=page, offset=offset
+                )
+
+                server.assert_called_with(
+                    url='/photo/all',
+                    method='POST',
+                    headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'},
+                    json={
+                        'cameraIds': cameras,
+                        'before': before,
+                        'limit': limit,
+                        'page': page,
+                        'offset': offset,
+                    }
+                )
+
+                expected_media = MediaApiResponse.from_json(photos_response)
+                self.assertEqual(media, expected_media)
+
+    async def test_get_media_with_deprecated_cameras_alias(self):
+        with SpypointServerForTest() as server:
+            token = server.prepare_login_response()
+            photos_response = {"photos": []}
+            server.prepare_photos_response(photos_response)
+
+            async with aiohttp.ClientSession() as session:
+                api = SpypointApi(self.username, self.password, session)
+
+                cameras = ["c1"]
+
+                media = await api.async_get_media(cameras=cameras)
+
+                server.assert_called_with(
+                    url='/photo/all',
+                    method='POST',
+                    headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'},
+                    json={'cameraIds': cameras}
+                )
+
+                expected_media = MediaApiResponse.from_json(photos_response)
+                self.assertEqual(media, expected_media)
+
     async def test_get_cameras_authentication_error(self):
         with SpypointServerForTest() as server:
             server.prepare_login_response()

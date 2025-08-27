@@ -64,8 +64,35 @@ class SpypointApi:
             gets_by_id = [self._async_get_shared_camera(camera_id) for camera_id in camera_ids]
             return await asyncio.gather(*gets_by_id)
 
-    async def async_get_media(self) -> List[Media]:
-        async with await self._post('/photo/all') as response:
+    async def async_get_media(
+        self,
+        camera_ids: list[str] | None = None,
+        before: str | None = None,
+        limit: int | None = None,
+        page: int | None = None,
+        offset: int | None = None,
+        # Deprecated alias; prefer camera_ids
+        cameras: list[str] | None = None,
+    ) -> List[Media]:
+        json = None
+        # Map deprecated alias to camera_ids if provided
+        if camera_ids is None and cameras:
+            camera_ids = cameras
+
+        if camera_ids or before or limit or page is not None or offset is not None:
+            json = {}
+            if camera_ids:
+                json['cameraIds'] = camera_ids
+            if before:
+                json['before'] = before
+            if limit:
+                json['limit'] = limit
+            if page is not None:
+                json['page'] = page
+            if offset is not None:
+                json['offset'] = offset
+
+        async with await self._post('/photo/all', json=json) as response:
             body = await response.json()
             return MediaApiResponse.from_json(body)
 
