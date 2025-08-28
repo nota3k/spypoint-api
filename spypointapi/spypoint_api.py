@@ -11,7 +11,7 @@ from . import Camera, Media, SpypointApiError, SpypointApiInvalidCredentialsErro
 from .cameras.camera_model import CameraModel
 from .cameras.camera_models_api_response import CameraModelsApiResponse
 from .cameras.camera_api_response import CameraApiResponse
-from .media.media_api_response import MediaApiResponse
+from .media.media_api_response import MediaApiResponse, MediaResponse
 from .shared_cameras.shared_cameras_api_response import SharedCamerasApiResponse
 
 LOGGER: Logger = getLogger(__package__)
@@ -74,7 +74,7 @@ class SpypointApi:
         offset: int | None = None,
         # Deprecated alias; prefer camera_ids
         cameras: list[str] | None = None,
-    ) -> List[Media]:
+    ) -> MediaResponse:
         json = None
         # Map deprecated alias to camera_ids if provided
         if camera_ids is None and cameras:

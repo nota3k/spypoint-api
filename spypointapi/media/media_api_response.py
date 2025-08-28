@@ -1,7 +1,16 @@
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from .media import Media
+
+
+@dataclass()
+class MediaResponse:
+    camera_id: Optional[str]
+    camera_ids: List[str]
+    count_photos: Optional[int]
+    photos: List[Media]
 
 
 class MediaApiResponse:
@@ -37,6 +46,12 @@ class MediaApiResponse:
         )
 
     @classmethod
-    def from_json(cls, data: Dict[str, Any]) -> List[Media]:
-        photos = data.get("photos", [])
-        return [cls.media_from_json(photo) for photo in photos]
+    def from_json(cls, data: Dict[str, Any]) -> MediaResponse:
+        photos_data = data.get("photos", [])
+        photos = [cls.media_from_json(photo) for photo in photos_data]
+        return MediaResponse(
+            camera_id=data.get("cameraId"),
+            camera_ids=data.get("cameraIds", []) or [],
+            count_photos=data.get("countPhotos"),
+            photos=photos,
+        )
