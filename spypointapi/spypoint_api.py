@@ -67,31 +67,23 @@ class SpypointApi:
 
     async def async_get_media(
         self,
-        camera_ids: list[str] | None = None,
-        before: str | None = None,
-        limit: int | None = None,
-        page: int | None = None,
-        offset: int | None = None,
-        # Deprecated alias; prefer camera_ids
-        cameras: list[str] | None = None,
+        camera: list[str],
+        date_end: str,
+        limit: int,
+        media_types: list[str],
+        species: list[str],
+        time_of_day: list[str],
+        custom_tags: list[str],
     ) -> MediaResponse:
-        json = None
-        # Map deprecated alias to camera_ids if provided
-        if camera_ids is None and cameras:
-            camera_ids = cameras
-
-        if camera_ids or before or limit or page is not None or offset is not None:
-            json = {}
-            if camera_ids:
-                json['cameraIds'] = camera_ids
-            if before:
-                json['before'] = before
-            if limit:
-                json['limit'] = limit
-            if page is not None:
-                json['page'] = page
-            if offset is not None:
-                json['offset'] = offset
+        json = {
+            "camera": camera,
+            "dateEnd": date_end,
+            "limit": limit,
+            "mediaTypes": media_types,
+            "species": species,
+            "timeOfDay": time_of_day,
+            "customTags": custom_tags,
+        }
 
         async with await self._post('/photo/all', json=json) as response:
             body = await response.json()
@@ -117,14 +109,11 @@ class SpypointApi:
 
     async def _post(self, url: str, json: dict | None = None) -> ClientResponse:
         await self.async_authenticate()
-        if json is None:
-            response = await self.session.post(
-                f'{self.base_url}{url}', headers=self.headers
-            )
-        else:
-            response = await self.session.post(
-                f'{self.base_url}{url}', headers=self.headers, json=json
-            )
+        response = await self.session.post(
+            f'{self.base_url}{url}',
+            headers=self.headers,
+            json=json
+        )
         await self._log(url, response, self.headers, json)
         self._raise_on_get_error(response)
         return response
@@ -138,7 +127,7 @@ class SpypointApi:
             raise SpypointApiError(response)
 
     @staticmethod
-    async def _log(url: str, response: ClientResponse, headers: dict, json: dict = None) -> None:
+    async def _log(url: str, response: ClientResponse, headers: dict, json: dict | None = None) -> None:
         # Avoid overhead unless debug logging is enabled
         if not LOGGER.isEnabledFor(logging.DEBUG):
             return
@@ -156,7 +145,15 @@ class SpypointApi:
         else:
             redacted_body = json
 
+        # Safely read response body without consuming it for other uses
+        response_body = "[Unable to read response body]"
+        try:
+            # Read the response content without consuming the stream
+            response_body = await response.text()
+        except Exception as e:
+            response_body = f"[Error reading response: {e}]"
+
         LOGGER.debug(
             f"{url} : Request[[ headers=[{redacted_headers}] body=[{redacted_body}] ]] - "
-            f"Response[[ status=[{response.status}] headers=[{dict(response.headers)}] body=[{await response.text()}] ]]"
+            f"Response[[ status=[{response.status}] headers=[{dict(response.headers)}] body=[{response_body}] ]]"
         )

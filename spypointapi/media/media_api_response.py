@@ -32,9 +32,20 @@ class MediaApiResponse:
         tags = data.get("tag", [])
         large = cls._url_from_json(data.get("large"))
         previews = None
-        if data.get("preview"):
-            previews = [cls._url_from_json(p) for p in data.get("preview")]
+        preview_data = data.get("preview")
+        if preview_data and isinstance(preview_data, list):
+            preview_urls = [cls._url_from_json(p) for p in preview_data]
+            previews = [url for url in preview_urls if url is not None]
         hd_video = cls._url_from_json(data.get("hdVideo"))
+        medium = cls._url_from_json(data.get("medium"))
+        small = cls._url_from_json(data.get("small"))
+
+        origin_date = None
+        origin_date_value = data.get("originDate")
+        if origin_date_value:
+            origin_date_str = str(origin_date_value)
+            origin_date = datetime.fromisoformat(origin_date_str.rstrip("Z")).replace(tzinfo=current_tz)
+
         return Media(
             id=data["id"],
             camera=data.get("camera", ""),
@@ -43,6 +54,11 @@ class MediaApiResponse:
             tags=tags,
             previews=previews,
             hd_video=hd_video,
+            medium=medium,
+            small=small,
+            origin_date=origin_date,
+            origin_name=data.get("originName"),
+            origin_size=data.get("originSize"),
         )
 
     @classmethod

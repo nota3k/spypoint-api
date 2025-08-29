@@ -172,12 +172,30 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
 
             async with aiohttp.ClientSession() as session:
                 api = SpypointApi(self.username, self.password, session)
-                media = await api.async_get_media()
+                media = await api.async_get_media(
+                    camera=["c1"],  # Required camera IDs
+                    date_end="2025-12-31",  # Required end date
+                    limit=100,  # Required limit
+                    media_types=["photo"],  # Required media types
+                    species=[],  # Required species array
+                    time_of_day=["day"],  # Required time of day
+                    custom_tags=[],  # Required custom tags
+                )
 
                 server.assert_called_with(
                     url='/photo/all',
                     method='POST',
-                    headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'})
+                    headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'},
+                    json={
+                        'camera': ['c1'],
+                        'dateEnd': '2025-12-31',
+                        'limit': 100,
+                        'mediaTypes': ['photo'],
+                        'species': [],
+                        'timeOfDay': ['day'],
+                        'customTags': [],
+                    }
+                )
 
                 expected_media = MediaApiResponse.from_json(photos_response)
                 self.assertEqual(media, expected_media)
@@ -192,13 +210,15 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
                 api = SpypointApi(self.username, self.password, session)
 
                 cameras = ["c1", "c2"]
-                before = "2025-02-01T00:00:00.000Z"
-                limit = 100
-                page = 2
-                offset = 10
 
                 media = await api.async_get_media(
-                    camera_ids=cameras, before=before, limit=limit, page=page, offset=offset
+                    camera=cameras,  # Required camera IDs
+                    date_end="2025-12-31",  # Required end date
+                    limit=100,  # Required limit
+                    media_types=["photo"],  # Required media types
+                    species=[],  # Required species array
+                    time_of_day=["day"],  # Required time of day
+                    custom_tags=[],  # Required custom tags
                 )
 
                 server.assert_called_with(
@@ -206,11 +226,13 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
                     method='POST',
                     headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'},
                     json={
-                        'cameraIds': cameras,
-                        'before': before,
-                        'limit': limit,
-                        'page': page,
-                        'offset': offset,
+                        'camera': cameras,
+                        'dateEnd': '2025-12-31',
+                        'limit': 100,
+                        'mediaTypes': ['photo'],
+                        'species': [],
+                        'timeOfDay': ['day'],
+                        'customTags': [],
                     }
                 )
 
@@ -228,13 +250,29 @@ class TestSpypointApi(unittest.IsolatedAsyncioTestCase):
 
                 cameras = ["c1"]
 
-                media = await api.async_get_media(cameras=cameras)
+                media = await api.async_get_media(
+                    camera=cameras,  # Required camera IDs
+                    date_end="2025-12-31",  # Required end date
+                    limit=100,  # Required limit
+                    media_types=["photo"],  # Required media types
+                    species=[],  # Required species array
+                    time_of_day=["day"],  # Required time of day
+                    custom_tags=[],  # Required custom tags
+                )
 
                 server.assert_called_with(
                     url='/photo/all',
                     method='POST',
                     headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'},
-                    json={'cameraIds': cameras}
+                    json={
+                        'camera': cameras,
+                        'dateEnd': '2025-12-31',
+                        'limit': 100,
+                        'mediaTypes': ['photo'],
+                        'species': [],
+                        'timeOfDay': ['day'],
+                        'customTags': [],
+                    }
                 )
 
                 expected_media = MediaApiResponse.from_json(photos_response)
