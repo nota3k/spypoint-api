@@ -1,17 +1,12 @@
-import aiohttp
-import asyncio
-import os
+"""Example runner moved to `examples/example.py`.
 
-from spypointapi import SpypointApi
+Run `python -m examples.example` or open `examples/example.py` for a working example.
+"""
 
+from pathlib import Path
 
-async def run():
-    async with aiohttp.ClientSession() as session:
-        api = SpypointApi(os.environ['EMAIL'], os.environ['PASSWORD'], session)
+THIS = Path(__file__).absolute()
+EX = THIS.parent / "examples" / "example.py"
 
-        cameras = await api.async_get_cameras()
-        for camera in cameras:
-            print(camera)
-
-
-asyncio.run(run())
+if __name__ == "__main__":
+    print("Example moved to:", EX)
