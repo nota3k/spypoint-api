@@ -1,7 +1,7 @@
 """Iterate photos using the high-level helper iter_photos."""
 import asyncio
 from datetime import datetime, timezone, timedelta
-from spypoint_api import SpypointApi
+from spypointapi import SpypointApi
 
 
 async def main():

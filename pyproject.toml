@@ -30,7 +30,7 @@ dev = [
 ]
 
 [tool.hatch.dynamic]
-version = { attr = "spypoint_api._version.__version__" }
+version = { attr = "spypointapi._version.__version__" }
 
 [tool.hatch.build.targets.wheel]
-packages = ["spypointapi", "spypoint_api"]
+packages = ["spypointapi"]

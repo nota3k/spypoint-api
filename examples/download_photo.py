@@ -1,7 +1,7 @@
 """Example: download a photo using SignedGet info returned by the API."""
 import asyncio
 import httpx
-from spypoint_api import SpypointApi
+from spypointapi import SpypointApi
 
 
 async def download_example(camera_id: str, photo_id: str):

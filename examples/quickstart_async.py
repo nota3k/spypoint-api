@@ -1,7 +1,7 @@
 """Quickstart example: login and list cameras asynchronously."""
 import asyncio
 import os
-from spypoint_api import SpypointApi, __version__
+from spypointapi import SpypointApi, __version__
 
 
 async def main():
