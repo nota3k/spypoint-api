@@ -92,3 +92,32 @@ Please approve one of the following:
 
 Once you approve which option to run (A or B) I will implement the changes in the commit sequence described in the Plan and produce `REPO_CLEANUP_REPORT.md` summarizing the applied changes.
 
+Final concrete operations for OPTION B (execute after your confirmation)
+-----------------------------------------------------------------
+Move operations (non-destructive moves to `archive/` or `examples/`):
+- Move `spypointapi/generated_models.py` -> `spypointapi/models/generated.py` (if present; adjust imports)
+- Move `spypointapi/download.py` -> `archive/spypointapi/download.py`
+- Move `spypointapi/filters.py` -> `archive/spypointapi/filters.py` (or keep if referenced)
+
+Delete operations (safe deletions / archived first when content-sensitive):
+- Delete `example.py` (or move to `examples/example.py` if you prefer)
+- Delete `real_auth_test.py` (move to `archive/real_auth_test.py` if it contains credentials)
+
+Archive legacy modules (we already moved `_archive/` but ensure originals removed):
+- Ensure `spypointapi/_archive/*` is removed from package import path (already done).
+
+Cleanup follow-ups:
+- Update `spypointapi/models/__init__.py` imports to reference `models/generated.py`.
+- Run `ruff --fix` on package to remove trivial unused imports.
+
+Confirm
+-------
+If you confirm OPTION B, I will apply the moves and deletions listed above in the following commit sequence:
+1. chore(cleanup): move generated_models to spypointapi/models/generated.py and update imports
+2. chore(cleanup): move download.py and filters.py to archive/
+3. chore(cleanup): delete example.py and move real_auth_test.py to archive/
+4. chore(cleanup): ruff --fix in package
+5. chore(cleanup): finalize cleanup report
+
+Reply "CONFIRM B" to proceed and I will execute the changes.
+
