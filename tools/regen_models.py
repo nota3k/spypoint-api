@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 
 SPEC = Path(__file__).parent.parent / "spec" / "spypoint.openapi.json"
-OUT = Path(__file__).parent.parent / "spypointapi" / "generated_models.py"
+OUT = Path(__file__).parent.parent / "spypointapi" / "models" / "_generated_impl.py"
 
 
 def main() -> None:
@@ -24,8 +24,8 @@ def main() -> None:
         str(SPEC),
         "--input-file-type",
         "openapi",
-        "--output",
-        str(OUT),
+    "--output",
+    str(OUT),
         "--output-model-type",
         "pydantic_v2.BaseModel",
         "--openapi-scopes",

@@ -4,7 +4,7 @@ This file intentionally re-exports symbols from the generated models module.
 It allows us to keep generated code colocated while keeping a stable import surface.
 """
 
-from ..generated_models import (
+from ._generated_impl import (
     ApiV3PhotoAllPostRequest,
     ApiV3PhotoAllPostResponse,
     ApiV3CameraAllGetResponse,
