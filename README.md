@@ -63,3 +63,49 @@ logging.basicConfig(level=logging.DEBUG)
 ```shell
 make release bump=patch|minor|major
 ```
+
+### Regenerating models
+
+The Pydantic models in this project are generated from the OpenAPI spec `spec/spypoint.openapi.json` using datamodel-code-generator. The repository separates auto-generated output from maintainer edits so generation is safe:
+
+- Auto-generated file: `spypointapi/models/_generated_auto.py` (overwritten by the generator)
+- Manual edits: `spypointapi/models/_generated_manual.py` (keep local edits here)
+- Public import shim: `spypointapi/models/generated.py` — this prefers symbols from the manual file and falls back to the auto file.
+
+Prerequisites
+
+- Python virtualenv active (recommended). You can use the repository `make venv` target.
+- Install the generator tool:
+
+```sh
+pip install datamodel-code-generator
+```
+
+Run the generator (recommended):
+
+```sh
+python scripts/regen_models.py
+# or the equivalent helper
+python tools/regen_models.py
+```
+
+What the generator does
+
+- Writes generated Pydantic v2 models to `spypointapi/models/_generated_auto.py`.
+- Do NOT directly edit `_generated_auto.py`; place any hand edits in `_generated_manual.py` so they are preserved across regenerations.
+
+After regenerating
+
+- Run the test suite and linter before committing:
+
+```sh
+make test
+ruff .
+```
+
+- Commit only intentional changes. If regeneration produced many changes, prefer a dedicated branch and a focused PR that explains the model changes.
+
+Notes
+
+- The regen helpers in `scripts/regen_models.py` and `tools/regen_models.py` call `datamodel-codegen` with these important flags: `--output-model-type pydantic_v2.BaseModel`, `--openapi-scopes paths`, and `--extra-fields allow`. These are tuned for this repository's Pydantic v2 usage and to preserve unknown fields on parsed responses.
+- If you need to change generation options, update the helper scripts and re-run the generator.

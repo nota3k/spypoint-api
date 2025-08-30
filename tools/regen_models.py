@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 
 SPEC = Path(__file__).parent.parent / "spec" / "spypoint.openapi.json"
-OUT = Path(__file__).parent.parent / "spypointapi" / "models" / "_generated_impl.py"
+OUT = Path(__file__).parent.parent / "spypointapi" / "models" / "_generated_auto.py"
 
 
 def main() -> None:
