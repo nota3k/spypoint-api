@@ -1,0 +1,18 @@
+{
+  "cameraId": null,
+  "cameraIds": ["65431e23fc16163fc1ef823e"],
+  "countPhotos": 1,
+  "photos": [
+    {
+      "id": "photo1",
+      "camera": "65431e23fc16163fc1ef823e",
+      "date": "2025-08-30T12:00:00.000Z",
+      "small": {"verb": "GET", "host": "example.com", "path": "s.jpg", "headers": [{"name":"Accept","value":"*/*"}]},
+      "medium": {"verb": "GET", "host": "example.com", "path": "m.jpg", "headers": [{"name":"Accept","value":"*/*"}]},
+      "large": {"verb": "GET", "host": "example.com", "path": "l.jpg", "headers": [{"name":"Accept","value":"*/*"}]},
+      "preview": [],
+      "tag": ["fav"],
+      "hdUploaded": false
+    }
+  ]
+}

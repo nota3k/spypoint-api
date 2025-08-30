@@ -1,0 +1,36 @@
+[
+  {
+    "id": "cam1",
+    "config": {
+      "name": "Camera 1",
+      "captureMode": "motion",
+      "delay": 30,
+      "multiShot": 1,
+      "quality": "high",
+      "operationMode": "active",
+      "sensibility": {"level": "medium"},
+      "transmitAuto": true,
+      "transmitFormat": "jpg",
+      "transmitFreq": 24,
+      "transmitTime": {"hour": 12, "minute": 0},
+      "triggerSpeed": "fast"
+    },
+    "status": {
+      "model": "Model X",
+      "modemFirmware": "1.0.0",
+      "version": "2.0.0",
+      "lastUpdate": "2023-10-01T10:00:00Z",
+      "signal": {"processed": {"percentage": 85}},
+      "temperature": {"unit": "C", "value": 25},
+      "batteries": {"main": 90},
+      "batteryType": "AA",
+      "memory": {"used": 50, "size": 100},
+      "notifications": ["low_battery"],
+      "coordinates": [{"position": {"type": "Point", "coordinates": [-122.4194, 37.7749]}}]
+    },
+    "ownerFirstName": "John",
+    "activationDate": "2023-01-01T00:00:00Z",
+    "creationDate": "2023-01-01T00:00:00Z",
+    "isCellular": true
+  }
+]

@@ -1,0 +1,5 @@
+{
+  "species": ["deer", "bear", "bird"],
+  "timeOfDay": ["day", "night", "dawn", "dusk"],
+  "mediaTypes": ["photo", "video", "hd", "hdvideo"]
+}

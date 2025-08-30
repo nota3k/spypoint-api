@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 """Simple test to verify the updated Media API works correctly."""
-
-import asyncio
 from datetime import datetime
 from spypointapi.media.media import Media
 from spypointapi.media.media_api_response import MediaApiResponse

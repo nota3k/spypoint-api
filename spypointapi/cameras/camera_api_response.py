@@ -1,8 +1,7 @@
 from datetime import datetime
 from typing import Dict, Any, List
 
-from .. import Camera
-from .camera import Coordinates, TransmitTime
+from .camera import Camera, Coordinates, TransmitTime
 
 
 class CameraApiResponse:
@@ -15,10 +14,11 @@ class CameraApiResponse:
     def camera_from_json(cls, data: Dict[str, Any]) -> Camera:
         config = data.get('config', {})
         status = data.get('status', {})
+        # Build the legacy Camera dataclass with parsed/derived fields
         return Camera(
             id=data['id'],
-            name=config['name'],
-            model=status['model'],
+            name=config.get('name'),
+            model=status.get('model', ''),
             modem_firmware=status.get('modemFirmware', ''),
             camera_firmware=status.get('version', ''),
             last_update_time=datetime.fromisoformat(status['lastUpdate'][:-1]).replace(tzinfo=datetime.now().astimezone().tzinfo),
@@ -44,6 +44,22 @@ class CameraApiResponse:
             transmit_freq=config.get('transmitFreq', None),
             transmit_time=CameraApiResponse.transmit_time_from_json(config.get('transmitTime', None)),
             trigger_speed=config.get('triggerSpeed', None),
+            # New fields
+            data_matrix_key=data.get('dataMatrixKey', None),
+            hd_since=CameraApiResponse.datetime_from_json(data.get('hdSince')),
+            ucid=data.get('ucid', None),
+            user=data.get('user', None),
+            subscriptions=data.get('subscriptions', None),
+            ptp_notifications=status.get('ptpNotifications', None),
+            commands=status.get('commands', None),
+            install_date=CameraApiResponse.datetime_from_json(status.get('installDate')),
+            serial=status.get('serial', None),
+            sim=status.get('sim', None),
+            version=status.get('version', None),
+            active_power_source=status.get('activePowerSource', None),
+            power_sources=status.get('powerSources', None),
+            update_info=status.get('update', None),
+            capability=status.get('capability', None),
         )
 
     @classmethod
@@ -56,18 +72,28 @@ class CameraApiResponse:
         return value if unit == 'C' else int((value - 32) * 5 / 9)
 
     @classmethod
-    def battery_from_json(cls, batteries: Dict[str, Any] | None) -> str | None:
-        if not batteries:
+    def battery_from_json(cls, batteries: Dict[str, Any] | None) -> float | None:
+        # batteries is expected to be a list of numeric battery levels per source
+        if not batteries or not isinstance(batteries, (list, tuple)):
             return None
-        return max(batteries)
+        try:
+            max_val = max([b for b in batteries if isinstance(b, (int, float))], default=None)
+        except Exception:
+            return None
+        return float(max_val) if max_val is not None else None
 
     @classmethod
     def memory_from_json(cls, memory: Dict[str, Any] | None) -> float | None:
-        if not memory:
+        if not memory or memory.get('size') in (None, 0):
             return None
-        if memory.get('size', 0) == 0:
+        used = memory.get('used')
+        size = memory.get('size')
+        if used is None or size is None or size == 0:
             return None
-        return round(memory.get('used') / memory.get('size') * 100, 2)
+        try:
+            return round(float(used) / float(size) * 100, 2)
+        except Exception:
+            return None
 
     @classmethod
     def transmit_time_from_json(cls, transmit_time: Dict[str, Any] | None) -> TransmitTime | None:

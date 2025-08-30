@@ -1,16 +1,16 @@
+"""High level package exports for spypointapi.
+
+This repo is being migrated to a new, typed client. Keep old names for
+compatibility while exposing new implementations.
+"""
+
+from .client import SpypointApi
+from .errors import SpypointApiError, SpypointApiInvalidCredentialsError
+from . import models
+
 __all__ = [
-    "Camera",
-    "CameraModel",
-    "Coordinates",
-    "Media",
-    "MediaResponse",
+    "SpypointApi",
     "SpypointApiError",
     "SpypointApiInvalidCredentialsError",
-    "SpypointApi",
+    "models",
 ]
-
-from .cameras.camera import Camera, Coordinates
-from .cameras.camera_model import CameraModel
-from .media import Media, MediaResponse
-from .spypoint_api_errors import SpypointApiError, SpypointApiInvalidCredentialsError
-from .spypoint_api import SpypointApi

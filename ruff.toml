@@ -1,0 +1,4 @@
+[tool.ruff]
+line-length = 100
+extend-select = ["E","F","I","B","UP","ASYNC","PL"]
+exclude = [".venv", "__pycache__", "build", "dist"]

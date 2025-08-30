@@ -49,6 +49,22 @@ class Camera:
     transmit_freq: int | None = None
     transmit_time: TransmitTime | None = None
     trigger_speed: str | None = None
+    # Expanded fields from /camera/all
+    data_matrix_key: str | None = None
+    hd_since: datetime | None = None
+    ucid: str | None = None
+    user: str | None = None
+    subscriptions: List[dict] | None = None
+    ptp_notifications: List[dict] | None = None
+    commands: dict | None = None
+    install_date: datetime | None = None
+    serial: int | None = None
+    sim: str | None = None
+    version: str | None = None
+    active_power_source: int | None = None
+    power_sources: List[dict] | None = None
+    update_info: dict | None = None
+    capability: dict | None = None
 
     @property
     def is_online(self) -> bool:
