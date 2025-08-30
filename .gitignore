@@ -9,3 +9,17 @@ dist/
 .coverage
 htmlcov/
 .DS_Store
+.env
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.log
+*.bak
+*.old
+*.tmp
+notebooks/
+playground/
+legacy/
+tmp/
+*.ipynb
